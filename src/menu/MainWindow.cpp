@@ -181,7 +181,10 @@ void MainWindow::SetupMainView() {
     currentTvFrame->effectFinished.connect(this, &MainWindow::OnOpenEffectFinish);
     appendTv(currentTvFrame);
 
-    currentDrcFrame = currentTvFrame;
+    currentDrcFrame = new GuiIconGrid(width, height,0);
+    currentDrcFrame->setEffect(EFFECT_FADE, 10, 255);
+    currentDrcFrame->setState(GuiElement::STATE_DISABLED);
+    currentDrcFrame->effectFinished.connect(this, &MainWindow::OnOpenEffectFinish);
 
 
     if(currentTvFrame != currentDrcFrame) {
@@ -206,6 +209,8 @@ void MainWindow::SetupMainView() {
     currentDrcFrame->gameLaunchClicked.connect(this, &MainWindow::OnGameLaunch);
 
     mainSwitchButtonFrame = new MainDrcButtonsFrame(width, height);
+    mainSwitchButtonFrame->settingsButtonClicked.connect(this, &MainWindow::OnSettingsButtonClicked);
+    mainSwitchButtonFrame->layoutSwitchClicked.connect(this, &MainWindow::OnLayoutSwitchClicked);
     mainSwitchButtonFrame->setState(GuiElement::STATE_DISABLED);
     mainSwitchButtonFrame->setEffect(EFFECT_FADE, 10, 255);
     mainSwitchButtonFrame->setState(GuiElement::STATE_DISABLED);
@@ -213,6 +218,62 @@ void MainWindow::SetupMainView() {
 
     appendDrc(currentDrcFrame);
     append(mainSwitchButtonFrame);
+}
+
+void MainWindow::OnLayoutSwitchClicked(GuiElement *element) {
+    if(!currentTvFrame || !currentDrcFrame || !mainSwitchButtonFrame) {
+        return;
+    }
+
+    if(currentTvFrame == currentDrcFrame) {
+        return;
+    }
+
+    currentTvFrame->setState(GuiElement::STATE_DISABLED);
+    currentTvFrame->setEffect(EFFECT_FADE, -15, 0);
+    currentTvFrame->effectFinished.connect(this, &MainWindow::OnLayoutSwitchEffectFinish);
+
+    currentDrcFrame->setState(GuiElement::STATE_DISABLED);
+    currentDrcFrame->setEffect(EFFECT_FADE, -15, 0);
+
+    mainSwitchButtonFrame->setState(GuiElement::STATE_DISABLED);
+}
+
+void MainWindow::OnLayoutSwitchEffectFinish(GuiElement *element) {
+    if(!currentTvFrame || !currentDrcFrame || !mainSwitchButtonFrame)
+        return;
+
+    element->effectFinished.disconnect(this);
+    remove(currentDrcFrame);
+    remove(currentTvFrame);
+
+    GuiTitleBrowser *tmpElement = currentDrcFrame;
+    currentDrcFrame = currentTvFrame;
+    currentTvFrame = tmpElement;
+
+    appendTv(currentTvFrame);
+    appendDrc(currentDrcFrame);
+    //! re-append on top
+    append(mainSwitchButtonFrame);
+
+    currentTvFrame->resetState();
+    currentTvFrame->setEffect(EFFECT_FADE, 15, 255);
+
+    currentDrcFrame->resetState();
+    currentDrcFrame->setEffect(EFFECT_FADE, 15, 255);
+
+    mainSwitchButtonFrame->clearState(GuiElement::STATE_DISABLED);
+
+    //! reconnect only to DRC game selection change
+    currentTvFrame->gameSelectionChanged.disconnect(this);
+    currentDrcFrame->gameSelectionChanged.disconnect(this);
+    currentTvFrame->gameLaunchClicked.disconnect(this);
+    currentDrcFrame->gameLaunchClicked.disconnect(this);
+
+    currentTvFrame->gameSelectionChanged.connect(this, &MainWindow::OnGameSelectionChange);
+    currentTvFrame->gameLaunchClicked.connect(this, &MainWindow::OnGameLaunch);
+    currentDrcFrame->gameSelectionChanged.connect(this, &MainWindow::OnGameSelectionChange);
+    currentDrcFrame->gameLaunchClicked.connect(this, &MainWindow::OnGameLaunch);
 }
 
 void MainWindow::OnOpenEffectFinish(GuiElement *element) {
@@ -225,6 +286,10 @@ void MainWindow::OnCloseEffectFinish(GuiElement *element) {
     //! remove element from draw list and push to delete queue
     remove(element);
     AsyncExecutor::pushForDelete(element);
+}
+
+void MainWindow::OnSettingsButtonClicked(GuiElement *element){
+
 }
 
 void MainWindow::OnGameSelectionChange(GuiTitleBrowser *element, int32_t selectedIdx) {

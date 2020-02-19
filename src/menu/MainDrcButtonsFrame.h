@@ -61,12 +61,6 @@ public:
         switchLayoutButton.setEffectGrow();
         switchLayoutButton.clicked.connect(this, &MainDrcButtonsFrame::OnLayoutSwithClick);
         append(&switchLayoutButton);
-
-        gameImageDownloadButton.setClickable(true);
-        gameImageDownloadButton.setSoundClick(buttonClickSound);
-        gameImageDownloadButton.setTrigger(&plusTrigger);
-        gameImageDownloadButton.clicked.connect(this, &MainDrcButtonsFrame::OnGameImageDownloadButtonClicked);
-        append(&gameImageDownloadButton);
     }
     virtual ~MainDrcButtonsFrame()
     {
@@ -78,16 +72,12 @@ public:
 
     sigslot::signal1<GuiElement *> settingsButtonClicked;
     sigslot::signal1<GuiElement *> layoutSwitchClicked;
-    sigslot::signal1<GuiElement *> gameImageDownloadClicked;
 private:
     void OnSettingsButtonClick(GuiButton *button, const GuiController *controller, GuiTrigger *) {
         settingsButtonClicked(this);
     }
     void OnLayoutSwithClick(GuiButton *button, const GuiController *controller, GuiTrigger *) {
         layoutSwitchClicked(this);
-    }
-    void OnGameImageDownloadButtonClicked(GuiButton *button, const GuiController *controller, GuiTrigger *) {
-        gameImageDownloadClicked(this);
     }
 
     GuiSound *buttonClickSound;

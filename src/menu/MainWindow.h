@@ -119,6 +119,10 @@ private:
     void OnGameLaunch(GuiTitleBrowser *element, int32_t gameIdx);
     void OnGameSelectionChange(GuiTitleBrowser *element, int32_t selectedIdx);
 
+    void OnSettingsButtonClicked(GuiElement *element);
+    void OnLayoutSwitchClicked(GuiElement *element);
+    void OnLayoutSwitchEffectFinish(GuiElement *element);
+
     int32_t width, height;
     std::vector<GuiElement *> drcElements;
     std::vector<GuiElement *> tvElements;
