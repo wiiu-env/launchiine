@@ -2,3 +2,4 @@
 *.elf
 *.rpx
 build/
+src/resources/filelist.h
