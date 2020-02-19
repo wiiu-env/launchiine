@@ -1,0 +1,15 @@
+#ifndef COMMON_H
+#define	COMMON_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define LAUNCHIINE_VERSION        "v0.1"
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif	/* COMMON_H */
+
