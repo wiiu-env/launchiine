@@ -22,6 +22,7 @@
 #include <gui/Gui.h>
 #include "game/GameList.h"
 #include "system/CMutex.h"
+#include "KeyboardHelper.h"
 #include "gui/GuiTitleBrowser.h"
 #include "MainDrcButtonsFrame.h"
 
@@ -123,6 +124,7 @@ private:
     void OnSettingsButtonClicked(GuiElement *element);
     void OnLayoutSwitchClicked(GuiElement *element);
     void OnLayoutSwitchEffectFinish(GuiElement *element);
+    void OnGameListFilterButtonClicked(GuiElement *element);
 
     void OnGameTitleListChanged(GameList * list);
     void OnGameTitleUpdated(gameInfo * info);
@@ -146,6 +148,7 @@ private:
     GameList gameList;
 
     CMutex guiMutex;
+    KeyboardHelper * keyboardInstance = NULL;
 };
 
 #endif //_MAIN_WINDOW_H_

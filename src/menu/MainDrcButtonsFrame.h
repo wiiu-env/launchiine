@@ -33,7 +33,7 @@ public:
         , settingsIcon(settingsIconData)
         , switchLayoutButton(switchIcon.getWidth(), switchIcon.getHeight())
         , settingsButton(settingsIcon.getWidth(), settingsIcon.getHeight())
-        , gameImageDownloadButton(w, h)
+        , gameListFilterButton(w, h)
         , touchTrigger(GuiTrigger::CHANNEL_1, GuiTrigger::VPAD_TOUCH)
         , wpadTouchTrigger(GuiTrigger::CHANNEL_2 | GuiTrigger::CHANNEL_3 | GuiTrigger::CHANNEL_4 | GuiTrigger::CHANNEL_5, GuiTrigger::BUTTON_A)
         , settingsTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_ZL, true)
@@ -61,6 +61,12 @@ public:
         switchLayoutButton.setEffectGrow();
         switchLayoutButton.clicked.connect(this, &MainDrcButtonsFrame::OnLayoutSwithClick);
         append(&switchLayoutButton);
+
+        gameListFilterButton.setClickable(true);
+        gameListFilterButton.setSoundClick(buttonClickSound);
+        gameListFilterButton.setTrigger(&plusTrigger);
+        gameListFilterButton.clicked.connect(this, &MainDrcButtonsFrame::OnGameListFilterButtonClicked);
+        append(&gameListFilterButton);
     }
     virtual ~MainDrcButtonsFrame()
     {
@@ -72,12 +78,16 @@ public:
 
     sigslot::signal1<GuiElement *> settingsButtonClicked;
     sigslot::signal1<GuiElement *> layoutSwitchClicked;
+    sigslot::signal1<GuiElement *> gameListFilterClicked;
 private:
     void OnSettingsButtonClick(GuiButton *button, const GuiController *controller, GuiTrigger *) {
         settingsButtonClicked(this);
     }
     void OnLayoutSwithClick(GuiButton *button, const GuiController *controller, GuiTrigger *) {
         layoutSwitchClicked(this);
+    }
+    void OnGameListFilterButtonClicked(GuiButton *button, const GuiController *controller, GuiTrigger *) {
+        gameListFilterClicked(this);
     }
 
     GuiSound *buttonClickSound;
@@ -89,7 +99,7 @@ private:
 
     GuiButton switchLayoutButton;
     GuiButton settingsButton;
-    GuiButton gameImageDownloadButton;
+    GuiButton gameListFilterButton;
 
     GuiTrigger touchTrigger;
     GuiTrigger wpadTouchTrigger;

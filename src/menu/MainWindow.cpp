@@ -18,6 +18,7 @@
 #include "Application.h"
 #include "utils/logger.h"
 #include "utils/StringTools.h"
+
 #include "resources/Resources.h"
 #include "gui/GuiTitleBrowser.h"
 #include "gui/GuiIconGrid.h"
@@ -107,6 +108,19 @@ void MainWindow::process() {
             tvElements[i]->process();
         }
     }
+
+    if(keyboardInstance != NULL) {
+        if(keyboardInstance->checkResult()) {
+            std::string result = keyboardInstance->getResult();
+
+            currentTvFrame->clearState(GuiElement::STATE_DISABLED);
+            currentDrcFrame->clearState(GuiElement::STATE_DISABLED);
+            mainSwitchButtonFrame->clearState(GuiElement::STATE_DISABLED);
+
+            gameList.filterList(result.c_str());
+        }else{
+        }
+    }
 }
 
 void MainWindow::OnGameTitleListChanged(GameList * list) {
@@ -186,6 +200,10 @@ void MainWindow::drawDrc(CVideo *video) {
             pointerImg[i]->setAlpha(1.0f);
         }
     }
+
+    if(keyboardInstance != NULL) {
+        keyboardInstance->drawDRC();
+    }
 }
 
 void MainWindow::drawTv(CVideo *video) {
@@ -198,6 +216,9 @@ void MainWindow::drawTv(CVideo *video) {
             pointerImg[i]->draw(video);
             pointerValid[i] = false;
         }
+    }
+    if(keyboardInstance != NULL) {
+        keyboardInstance->drawTV();
     }
 }
 
@@ -266,6 +287,23 @@ void MainWindow::OnLayoutSwitchClicked(GuiElement *element) {
     currentDrcFrame->setEffect(EFFECT_FADE, -15, 0);
 
     mainSwitchButtonFrame->setState(GuiElement::STATE_DISABLED);
+}
+
+void MainWindow::OnGameListFilterButtonClicked(GuiElement *element) {
+    if(!currentTvFrame || !currentDrcFrame || !mainSwitchButtonFrame) {
+        return;
+    }
+
+    if(keyboardInstance == NULL) {
+        keyboardInstance = new KeyboardHelper();
+    }
+    if(keyboardInstance->isReady()) {
+        if(keyboardInstance->openKeyboard()) {
+            currentTvFrame->setState(GuiElement::STATE_DISABLED);
+            currentDrcFrame->setState(GuiElement::STATE_DISABLED);
+            mainSwitchButtonFrame->setState(GuiElement::STATE_DISABLED);
+        }
+    }
 }
 
 void MainWindow::OnLayoutSwitchEffectFinish(GuiElement *element) {
