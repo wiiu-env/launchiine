@@ -74,6 +74,7 @@ uint64_t GuiIconGrid::getSelectedGame(void) {
 
 void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
     containerMutex.lock();
+    gameList->lock();
     for(int32_t i = 0; i < gameList->size(); i++) {
         gameInfo * info = gameList->at(i);
         GameInfoContainer * container = NULL;
@@ -89,6 +90,7 @@ void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
             OnGameTitleAdded(info);
         }
     }
+    gameList->unlock();
     containerMutex.unlock();
     bUpdatePositions = true;
 }

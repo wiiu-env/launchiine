@@ -16,6 +16,7 @@
 #include "system/CMutex.h"
 
 void GameList::clear() {
+    lock();
     for (auto const& x : fullGameList) {
         if(x != NULL) {
             if(x->imageData != NULL) {
@@ -31,6 +32,8 @@ void GameList::clear() {
     //! Clear memory of the vector completely
     std::vector<gameInfo *>().swap(filteredList);
     std::vector<gameInfo*>().swap(fullGameList);
+
+    unlock();
     titleListChanged(this);
 }
 
@@ -90,6 +93,7 @@ int32_t GameList::readGameList() {
             newGameInfo->name = "<unknown>";
             newGameInfo->imageData = NULL;
             DCFlushRange(newGameInfo, sizeof(gameInfo));
+
             fullGameList.push_back(newGameInfo);
             titleAdded(newGameInfo);
             cnt++;
@@ -184,6 +188,7 @@ void GameList::internalFilterList(std::vector<gameInfo*> &fullList) {
 }
 
 int32_t GameList::filterList(const char * filter) {
+    lock();
     if(filter) {
         gameFilter = filter;
     }
@@ -202,8 +207,9 @@ int32_t GameList::filterList(const char * filter) {
     titleListChanged(this);
 
     AsyncExecutor::execute([&] { updateTitleInfo();});
-
-    return filteredList.size();
+    int32_t res = filteredList.size();
+    unlock();
+    return res;
 }
 
 void GameList::internalLoadUnfiltered(std::vector<gameInfo*> & fullList) {
@@ -215,6 +221,7 @@ void GameList::internalLoadUnfiltered(std::vector<gameInfo*> & fullList) {
 }
 
 int32_t GameList::loadUnfiltered() {
+    lock();
     if(fullGameList.size() == 0) {
         readGameList();
     }
@@ -231,11 +238,15 @@ int32_t GameList::loadUnfiltered() {
 
     titleListChanged(this);
 
-    return filteredList.size();
+    int res = filteredList.size();
+    unlock();
+    return res;
 }
 
 void GameList::sortList() {
+    lock();
     std::sort(filteredList.begin(), filteredList.end(), nameSortCallback);
+    unlock();
 }
 
 bool GameList::nameSortCallback(const gameInfo *a, const gameInfo *b) {

@@ -17,24 +17,36 @@ typedef struct _gameInfo {
 class GameList {
 public:
     GameList() : selectedGame(0) { };
-    ~GameList() { clear(); };
+    ~GameList() {
+        clear();
+    };
 
-    int32_t size() const {
-        return filteredList.size();
+    int32_t size() {
+        lock();
+        int32_t res = filteredList.size();
+        unlock();
+        return res;
     }
-    int32_t gameCount() const {
-        return fullGameList.size();
+    int32_t gameCount() {
+        lock();
+        int32_t res = fullGameList.size();
+        unlock();
+        return res;
     }
     int32_t filterList(const char * gameFilter = NULL);
     int32_t loadUnfiltered();
 
-    gameInfo * at(int32_t i) const {
+    gameInfo * at(int32_t i) {
         return operator[](i);
     }
-    gameInfo * operator[](int32_t i) const {
+    gameInfo * operator[](int32_t i) {
+        lock();
+        gameInfo * res = NULL;
         if (i < 0 || i >= (int32_t) filteredList.size())
-            return NULL;
-        return filteredList[i];
+            res = NULL;
+        res =  filteredList[i];
+        unlock();
+        return res;
     }
     gameInfo * getGameInfo(uint64_t titleId) const;
 
@@ -43,22 +55,37 @@ public:
     }
     void sortList();
     void clear();
-    bool operator!() const {
-        return (fullGameList.size() == 0);
+    bool operator!() {
+        lock();
+        bool res = (fullGameList.size() == 0);
+        unlock();
+        return res;
     }
 
     //! Gamelist scrolling operators
     int32_t operator+=(int32_t i) {
-        return (selectedGame = (selectedGame+i) % filteredList.size());
+        lock();
+        int32_t res = (selectedGame = (selectedGame+i) % filteredList.size());
+        unlock();
+        return res;
     }
     int32_t operator-=(int32_t i) {
-        return (selectedGame = (selectedGame-i+filteredList.size()) % filteredList.size());
+        lock();
+        int32_t res = (selectedGame = (selectedGame-i+filteredList.size()) % filteredList.size());
+        unlock();
+        return res;
     }
     int32_t operator++() {
-        return (selectedGame = (selectedGame+1) % filteredList.size());
+        lock();
+        int32_t res =  (selectedGame = (selectedGame+1) % filteredList.size());
+        unlock();
+        return res;
     }
     int32_t operator--() {
-        return (selectedGame = (selectedGame-1+filteredList.size()) % filteredList.size());
+        lock();
+        int32_t res =  (selectedGame = (selectedGame-1+filteredList.size()) % filteredList.size());
+        unlock();
+        return res;
     }
     int32_t operator++(int32_t i) {
         return operator++();
@@ -66,7 +93,7 @@ public:
     int32_t operator--(int32_t i) {
         return operator--();
     }
-    gameInfo * GetCurrentSelected() const {
+    gameInfo * GetCurrentSelected() {
         return operator[](selectedGame);
     }
 
@@ -80,6 +107,13 @@ public:
     sigslot::signal1<GameList *> titleListChanged;
     sigslot::signal1<gameInfo *> titleUpdated;
     sigslot::signal1<gameInfo *> titleAdded;
+
+    void lock() {
+        _lock.lock();
+    }
+    void unlock(){
+        _lock.unlock();
+    }
 protected:
 
     int32_t readGameList();
@@ -97,6 +131,8 @@ protected:
     int32_t selectedGame;
     std::vector<gameInfo *> filteredList;
     std::vector<gameInfo *> fullGameList;
+
+    CMutex _lock;
 };
 
 #endif
