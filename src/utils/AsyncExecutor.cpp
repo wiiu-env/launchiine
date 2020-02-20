@@ -6,15 +6,39 @@ AsyncExecutor * AsyncExecutor::instance = NULL;
 void AsyncExecutor::pushForDelete(GuiElement * ptr) {
     execute([ptr] {delete ptr;});
 }
+AsyncExecutor::AsyncExecutor() {
+    thread = new std::thread([&]() {
+        while(!exitThread) {
+            instance->mutex.lock();
+            auto it = instance->elements.begin();
+            while (it != instance->elements.end()) {
+                auto future = it;
+                auto status = future->wait_for(std::chrono::seconds(0));
+                if (status == std::future_status::ready) {
+                    it = instance->elements.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+            instance->mutex.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            DCFlushRange((void*)&exitThread, sizeof(exitThread));
+        }
+    });
+
+    thread->detach();
+}
 
 void AsyncExecutor::execute(std::function<void()> func) {
     if(!instance) {
         instance = new AsyncExecutor();
     }
-    instance->elements.push(std::async(std::launch::async,func));
-    if(instance->elements.size() >= 25){
-        //DEBUG_FUNCTION_LINE("Wait on queue %d\n",instance->elements.size());
-        instance->elements.front().get();
-        instance->elements.pop();
+
+    while(instance->elements.size() > 10) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+
+    instance->mutex.lock();
+    instance->elements.push_back(std::async(std::launch::async,func));
+    instance->mutex.unlock();
 }

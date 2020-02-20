@@ -124,10 +124,7 @@ void MainWindow::OnGameTitleUpdated(gameInfo * info) {
 }
 
 void MainWindow::OnGameTitleAdded(gameInfo * info) {
-    DEBUG_FUNCTION_LINE("%08X\n", info);
-    if(info == NULL) {
-        return;
-    }
+
     currentTvFrame->OnGameTitleAdded(info);
     if(currentTvFrame != currentDrcFrame) {
         currentDrcFrame->OnGameTitleAdded(info);

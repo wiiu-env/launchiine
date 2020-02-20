@@ -41,7 +41,7 @@ bool Application::exitApplication = false;
 bool Application::quitRequest = false;
 
 Application::Application()
-    : CThread(CThread::eAttributeAffCore1 | CThread::eAttributePinnedAff, 0, 0x20000)
+    : CThread(CThread::eAttributeAffCore1 | CThread::eAttributePinnedAff, 0, 0x800000)
     , bgMusic(NULL)
     , video(NULL)
     , mainWindow(NULL)
@@ -58,6 +58,8 @@ Application::Application()
     bgMusic->SetLoop(true);
     bgMusic->Play();
     bgMusic->SetVolume(50);
+
+    AsyncExecutor::execute([] {DEBUG_FUNCTION_LINE("Hello\n");});
 
     exitApplication = false;
 

@@ -13,12 +13,12 @@
 #include "fs/FSUtils.h"
 #include "utils/logger.h"
 #include "utils/StringTools.h"
+#include "system/CMutex.h"
 
 void GameList::clear() {
     for (auto const& x : fullGameList) {
         if(x != NULL) {
             if(x->imageData != NULL) {
-                DEBUG_FUNCTION_LINE("Delete the image data\n");
                 delete x->imageData;
                 x->imageData = NULL;
             }
@@ -80,8 +80,10 @@ int32_t GameList::readGameList() {
         titles.resize(realTitleCount);
     }
 
+    CMutex extraInfoMutex;
+
     for (auto title_candidate : titles) {
-        if(true || (title_candidate.titleId & 0xFFFFFFFF00000000L) == 0x0005000000000000L) {
+        if((title_candidate.titleId & 0xFFFFFFFF00000000L) == 0x0005000000000000L) {
             gameInfo* newGameInfo = new gameInfo;
             newGameInfo->titleId = title_candidate.titleId;
             newGameInfo->gamePath = title_candidate.path;
@@ -91,6 +93,39 @@ int32_t GameList::readGameList() {
             fullGameList.push_back(newGameInfo);
             titleAdded(newGameInfo);
             cnt++;
+
+            AsyncExecutor::execute([newGameInfo, this, &extraInfoMutex] {
+                extraInfoMutex.lock();
+                DEBUG_FUNCTION_LINE("Load extra infos of %016llX\n",newGameInfo->titleId);
+                ACPMetaXml* meta = (ACPMetaXml*)calloc(1, 0x4000); //TODO fix wut
+                if(meta) {
+                    auto acp = ACPGetTitleMetaXml(newGameInfo->titleId, meta);
+                    if(acp >= 0) {
+                        newGameInfo->name = meta->shortname_en;
+                    }
+                    free(meta);
+                }
+
+                if(newGameInfo->imageData == NULL) {
+                    std::string filepath = "fs:" + newGameInfo->gamePath + META_PATH + "/iconTex.tga";
+                    uint8_t *buffer = NULL;
+                    uint32_t bufferSize = 0;
+                    int iResult = FSUtils::LoadFileToMem(filepath.c_str(), &buffer, &bufferSize);
+
+                    if(iResult > 0) {
+                        GuiImageData * imageData = new GuiImageData(buffer, bufferSize, GX2_TEX_CLAMP_MODE_MIRROR);
+                        if(imageData) {
+                            newGameInfo->imageData = imageData;
+                        }
+
+                        //! free original image buffer which is converted to texture now and not needed anymore
+                        free(buffer);
+                    }
+                }
+                DCFlushRange(newGameInfo, sizeof(gameInfo));
+                titleUpdated(newGameInfo);
+                extraInfoMutex.unlock();
+            });
         }
     }
 
