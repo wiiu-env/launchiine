@@ -29,7 +29,8 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex)
     , touchTrigger(GuiTrigger::CHANNEL_1, GuiTrigger::VPAD_TOUCH)
     , wpadTouchTrigger(GuiTrigger::CHANNEL_2 | GuiTrigger::CHANNEL_3 | GuiTrigger::CHANNEL_4 | GuiTrigger::CHANNEL_5, GuiTrigger::BUTTON_A)
     , noIcon(Resources::GetFile("noGameIcon.png"), Resources::GetFileSize("noGameIcon.png"), GX2_TEX_CLAMP_MODE_MIRROR) {
-    append(&particleBgImage);
+
+    particleBgImage.setParent(this);
     selectedGame = GameIndex;
     listOffset = selectedGame / (MAX_COLS * MAX_ROWS);
     targetLeftPosition = -listOffset * getWidth();
@@ -222,6 +223,12 @@ void GuiIconGrid::updateButtonPositions() {
 }
 
 void GuiIconGrid::draw(CVideo *pVideo) {
+
+    //! the BG needs to be rendered to stencil
+    pVideo->setStencilRender(true);
+    particleBgImage.draw(pVideo);
+    pVideo->setStencilRender(false);
+
     containerMutex.lock();
     GuiFrame::draw(pVideo);
     containerMutex.unlock();
