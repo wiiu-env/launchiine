@@ -29,6 +29,8 @@
 #include <vector>
 #include <string>
 #include <wut_types.h>
+#include <algorithm>
+#include <cctype>
 
 class StringTools {
 public:
@@ -74,6 +76,9 @@ public:
     }
 
     static std::vector<std::string> stringSplit(const std::string & value, const std::string & splitter);
+
+    // https://stackoverflow.com/a/19839371
+    static bool findStringIC(const std::string & strHaystack, const std::string & strNeedle);
 };
 
 #endif /* __STRING_TOOLS_H */

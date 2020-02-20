@@ -209,3 +209,13 @@ std::vector<std::string> StringTools::stringSplit(const std::string & inValue, c
     }
     return result;
 }
+
+bool StringTools::findStringIC(const std::string & strHaystack, const std::string & strNeedle)
+{
+  auto it = std::search(
+    strHaystack.begin(), strHaystack.end(),
+    strNeedle.begin(),   strNeedle.end(),
+    [](char ch1, char ch2) { return std::toupper(ch1) == std::toupper(ch2); }
+  );
+  return (it != strHaystack.end() );
+}

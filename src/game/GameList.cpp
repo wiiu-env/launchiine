@@ -177,10 +177,9 @@ void GameList::updateTitleInfo() {
 void GameList::internalFilterList(std::vector<gameInfo*> &fullList) {
     for (uint32_t i = 0; i < fullList.size(); ++i) {
         gameInfo *header = fullList[i];
-
-        //! TODO: do filtering as needed
-
-        filteredList.push_back(header);
+        if (StringTools::findStringIC(header->name,gameFilter)) {
+            filteredList.push_back(header);
+        }
     }
 }
 
