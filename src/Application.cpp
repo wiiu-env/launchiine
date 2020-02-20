@@ -253,7 +253,9 @@ void Application::executeThread(void) {
 
             if(controller[i]->data.buttons_d & VPAD_BUTTON_HOME) {
                 if (sFromHBL) {
+                    fadeOut();
                     SYSRelaunchTitle(0, NULL);
+                    continue;
                 }
             }
         }
