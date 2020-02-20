@@ -87,7 +87,7 @@ protected:
     void internalFilterList(std::vector<gameInfo*> & fullList);
     void internalLoadUnfiltered(std::vector<gameInfo*> & fullList);
 
-    void loadIcons();
+    void updateTitleInfo();
 
     static bool nameSortCallback(const gameInfo *a, const gameInfo *b);
 

@@ -132,15 +132,18 @@ int32_t GameList::readGameList() {
     return cnt;
 }
 
-void GameList::loadIcons() {
+void GameList::updateTitleInfo() {
     for (int i = 0; i < this->size(); i++) {
         gameInfo * newHeader = this->at(i);
+
+        bool hasChanged = false;
 
         ACPMetaXml* meta = (ACPMetaXml*)calloc(1, 0x4000); //TODO fix wut
         if(meta) {
             auto acp = ACPGetTitleMetaXml(newHeader->titleId, meta);
             if(acp >= 0) {
                 newHeader->name = meta->shortname_en;
+                hasChanged = true;
             }
             free(meta);
         }
@@ -155,14 +158,17 @@ void GameList::loadIcons() {
                 GuiImageData * imageData = new GuiImageData(buffer, bufferSize, GX2_TEX_CLAMP_MODE_MIRROR);
                 if(imageData) {
                     newHeader->imageData = imageData;
+                    hasChanged = true;
                 }
 
                 //! free original image buffer which is converted to texture now and not needed anymore
                 free(buffer);
             }
         }
-        DCFlushRange(newHeader, sizeof(gameInfo));
-        titleUpdated(newHeader);
+        if(hasChanged) {
+            DCFlushRange(newHeader, sizeof(gameInfo));
+            titleUpdated(newHeader);
+        }
     }
 }
 
@@ -194,7 +200,7 @@ int32_t GameList::filterList(const char * filter) {
 
     titleListChanged(this);
 
-    AsyncExecutor::execute([&] { loadIcons();});
+    AsyncExecutor::execute([&] { updateTitleInfo();});
 
     return filteredList.size();
 }
@@ -220,7 +226,7 @@ int32_t GameList::loadUnfiltered() {
 
     sortList();
 
-    AsyncExecutor::execute([&] { loadIcons();});
+    AsyncExecutor::execute([&] { updateTitleInfo();});
 
     titleListChanged(this);
 
