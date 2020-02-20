@@ -18,6 +18,7 @@
 
 #include <map>
 #include "gui/GuiTitleBrowser.h"
+#include "gui/GameIcon.h"
 #include <gui/GuiParticleImage.h>
 #include "utils/AsyncExecutor.h"
 #include "utils/logger.h"
@@ -64,7 +65,7 @@ private:
 
     class GameInfoContainer {
     public:
-        GameInfoContainer(GuiButton* button, GuiImage * image, gameInfo * info) {
+        GameInfoContainer(GuiButton* button, GameIcon * image, gameInfo * info) {
             this->image = image;
             this->info = info;
             this->button = button;
@@ -85,7 +86,7 @@ private:
             }
         }
 
-        GuiImage * image;
+        GameIcon * image;
         gameInfo * info;
         GuiButton * button;
     };

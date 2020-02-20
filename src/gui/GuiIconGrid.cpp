@@ -21,6 +21,7 @@
 #include "Application.h"
 #include <gui/video/CVideo.h>
 #include "utils/logger.h"
+#include "gui/GameIcon.h"
 
 GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex)
     : GuiTitleBrowser(w, h, GameIndex),
@@ -47,6 +48,20 @@ GuiIconGrid::~GuiIconGrid() {
 
 void GuiIconGrid::setSelectedGame(uint64_t idx) {
     this->selectedGame = idx;
+
+    containerMutex.lock();
+
+    GameInfoContainer * container = NULL;
+    for (auto const& x : gameInfoContainers) {
+        container = x.second;
+        if(x.first == idx) {
+            container->image->setSelected(true);
+        }else{
+            container->image->setSelected(false);
+        }
+    }
+
+    containerMutex.unlock();
 }
 
 uint64_t GuiIconGrid::getSelectedGame(void) {
@@ -104,7 +119,12 @@ void GuiIconGrid::OnGameButtonClick(GuiButton *button, const GuiController *cont
 
 void GuiIconGrid::OnGameTitleAdded(gameInfo * info) {
     DEBUG_FUNCTION_LINE("Adding %016llX\n", info->titleId);
-    GuiImage * image = new GuiImage(&noIcon);
+    GameIcon * image = new GameIcon(&noIcon);
+    image->setRenderReflection(false);
+    image->setStrokeRender(false);
+    image->setSelected(info->titleId == selectedGame);
+    image->setRenderIconLast(true);
+
     GuiButton * button = new GuiButton(noIcon.getWidth(), noIcon.getHeight());
     button->setImage(image);
     button->setPosition(0, 0);
