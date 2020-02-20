@@ -138,14 +138,16 @@ void GameList::updateTitleInfo() {
 
         bool hasChanged = false;
 
-        ACPMetaXml* meta = (ACPMetaXml*)calloc(1, 0x4000); //TODO fix wut
-        if(meta) {
-            auto acp = ACPGetTitleMetaXml(newHeader->titleId, meta);
-            if(acp >= 0) {
-                newHeader->name = meta->shortname_en;
-                hasChanged = true;
+        if(newHeader->name.empty()) {
+            ACPMetaXml* meta = (ACPMetaXml*)calloc(1, 0x4000); //TODO fix wut
+            if(meta) {
+                auto acp = ACPGetTitleMetaXml(newHeader->titleId, meta);
+                if(acp >= 0) {
+                    newHeader->name = meta->shortname_en;
+                    hasChanged = true;
+                }
+                free(meta);
             }
-            free(meta);
         }
 
         if(newHeader->imageData == NULL) {
