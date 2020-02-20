@@ -75,6 +75,28 @@ uint64_t GuiIconGrid::getSelectedGame(void) {
 void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
     containerMutex.lock();
     gameList->lock();
+    // At first delete the ones that were deleted;
+    auto it = gameInfoContainers.begin();
+    while (it != gameInfoContainers.end()) {
+        bool wasFound = false;
+        for(int32_t i = 0; i < gameList->size(); i++) {
+            gameInfo * info = gameList->at(i);
+            if(info != NULL && info->titleId == it->first) {
+                wasFound = true;
+                break;
+            }
+        }
+
+        if (!wasFound) {
+            DEBUG_FUNCTION_LINE("Removing %016llX\n", it->first);
+            remove(it->second->button);
+            delete it->second;
+            it = gameInfoContainers.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
     for(int32_t i = 0; i < gameList->size(); i++) {
         gameInfo * info = gameList->at(i);
         GameInfoContainer * container = NULL;
