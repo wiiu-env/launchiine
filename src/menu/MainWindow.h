@@ -20,6 +20,7 @@
 #include <vector>
 #include <queue>
 #include <gui/Gui.h>
+#include "game/GameList.h"
 #include "system/CMutex.h"
 #include "gui/GuiTitleBrowser.h"
 #include "MainDrcButtonsFrame.h"
@@ -116,12 +117,16 @@ private:
     void OnOpenEffectFinish(GuiElement *element);
     void OnCloseEffectFinish(GuiElement *element);
 
-    void OnGameLaunch(GuiTitleBrowser *element, int32_t gameIdx);
-    void OnGameSelectionChange(GuiTitleBrowser *element, int32_t selectedIdx);
+    void OnGameLaunch(GuiTitleBrowser *element, uint64_t gameIdx);
+    void OnGameSelectionChange(GuiTitleBrowser *element, uint64_t selectedIdx);
 
     void OnSettingsButtonClicked(GuiElement *element);
     void OnLayoutSwitchClicked(GuiElement *element);
     void OnLayoutSwitchEffectFinish(GuiElement *element);
+
+    void OnGameTitleListChanged(GameList * list);
+    void OnGameTitleUpdated(gameInfo * info);
+    void OnGameTitleAdded(gameInfo * info);
 
     int32_t width, height;
     std::vector<GuiElement *> drcElements;
@@ -137,6 +142,8 @@ private:
     GuiImageData *pointerImgData[4];
     GuiImage *pointerImg[4];
     bool pointerValid[4];
+
+    GameList gameList;
 
     CMutex guiMutex;
 };

@@ -40,9 +40,15 @@ MainWindow::MainWindow(int32_t w, int32_t h)
         pointerValid[i] = false;
     }
     SetupMainView();
+    gameList.titleListChanged.connect(this, &MainWindow::OnGameTitleListChanged);
+    gameList.titleUpdated.connect(this, &MainWindow::OnGameTitleUpdated);
+    gameList.titleAdded.connect(this, &MainWindow::OnGameTitleAdded);
+    AsyncExecutor::execute([&] {gameList.loadUnfiltered();});
+
 }
 
 MainWindow::~MainWindow() {
+    gameList.titleListChanged.disconnect(this);
     while(!tvElements.empty()) {
         delete tvElements[0];
         remove(tvElements[0]);
@@ -100,6 +106,31 @@ void MainWindow::process() {
         if(n == drcElements.size()) {
             tvElements[i]->process();
         }
+    }
+}
+
+void MainWindow::OnGameTitleListChanged(GameList * list) {
+    currentTvFrame->OnGameTitleListUpdated(list);
+    if(currentTvFrame != currentDrcFrame) {
+        currentDrcFrame->OnGameTitleListUpdated(list);
+    }
+}
+
+void MainWindow::OnGameTitleUpdated(gameInfo * info) {
+    currentTvFrame->OnGameTitleUpdated(info);
+    if(currentTvFrame != currentDrcFrame) {
+        currentDrcFrame->OnGameTitleUpdated(info);
+    }
+}
+
+void MainWindow::OnGameTitleAdded(gameInfo * info) {
+    DEBUG_FUNCTION_LINE("%08X\n", info);
+    if(info == NULL) {
+        return;
+    }
+    currentTvFrame->OnGameTitleAdded(info);
+    if(currentTvFrame != currentDrcFrame) {
+        currentDrcFrame->OnGameTitleAdded(info);
     }
 }
 
@@ -179,13 +210,13 @@ void MainWindow::SetupMainView() {
     currentTvFrame->setEffect(EFFECT_FADE, 10, 255);
     currentTvFrame->setState(GuiElement::STATE_DISABLED);
     currentTvFrame->effectFinished.connect(this, &MainWindow::OnOpenEffectFinish);
+
     appendTv(currentTvFrame);
 
     currentDrcFrame = new GuiIconGrid(width, height,0);
     currentDrcFrame->setEffect(EFFECT_FADE, 10, 255);
     currentDrcFrame->setState(GuiElement::STATE_DISABLED);
     currentDrcFrame->effectFinished.connect(this, &MainWindow::OnOpenEffectFinish);
-
 
     if(currentTvFrame != currentDrcFrame) {
         currentDrcFrame->setEffect(EFFECT_FADE, 10, 255);
@@ -288,11 +319,11 @@ void MainWindow::OnCloseEffectFinish(GuiElement *element) {
     AsyncExecutor::pushForDelete(element);
 }
 
-void MainWindow::OnSettingsButtonClicked(GuiElement *element){
+void MainWindow::OnSettingsButtonClicked(GuiElement *element) {
 
 }
 
-void MainWindow::OnGameSelectionChange(GuiTitleBrowser *element, int32_t selectedIdx) {
+void MainWindow::OnGameSelectionChange(GuiTitleBrowser *element, uint64_t selectedIdx) {
     if(!currentDrcFrame || !currentTvFrame)
         return;
 
@@ -303,6 +334,6 @@ void MainWindow::OnGameSelectionChange(GuiTitleBrowser *element, int32_t selecte
     }
 }
 
-void MainWindow::OnGameLaunch(GuiTitleBrowser *element, int32_t selectedIdx) {
+void MainWindow::OnGameLaunch(GuiTitleBrowser *element, uint64_t selectedIdx) {
 
 }

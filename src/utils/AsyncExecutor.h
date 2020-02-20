@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <queue>
 #include <future>
 #include <gui/GuiElement.h>
 
@@ -22,5 +22,5 @@ private:
     AsyncExecutor() {}
     ~AsyncExecutor() {}
 
-    std::vector<std::future<void>> elements;
+    std::queue<std::future<void>> elements;
 };

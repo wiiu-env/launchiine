@@ -2,15 +2,20 @@
 
 #include <gui/Gui.h>
 #include <gui/sigslot.h>
+#include "game/GameList.h"
 
 class GuiTitleBrowser : public GuiFrame {
 public:
-    GuiTitleBrowser(int32_t w, int32_t h, int32_t GameIndex) : GuiFrame(w, h) {}
+    GuiTitleBrowser(int32_t w, int32_t h, uint64_t GameIndex) : GuiFrame(w, h) {}
     virtual ~GuiTitleBrowser() {}
 
-    virtual void setSelectedGame(int32_t idx) = 0;
-    virtual int32_t getSelectedGame(void) = 0;
+    virtual void setSelectedGame(uint64_t idx) = 0;
+    virtual uint64_t getSelectedGame(void) = 0;
 
-    sigslot::signal2<GuiTitleBrowser *, int32_t> gameLaunchClicked;
-    sigslot::signal2<GuiTitleBrowser *, int32_t> gameSelectionChanged;
+    virtual void OnGameTitleListUpdated(GameList * list) = 0;
+    virtual void OnGameTitleUpdated(gameInfo * info) = 0;
+    virtual void OnGameTitleAdded(gameInfo * info) = 0;
+
+    sigslot::signal2<GuiTitleBrowser *, uint64_t> gameLaunchClicked;
+    sigslot::signal2<GuiTitleBrowser *, uint64_t> gameSelectionChanged;
 };

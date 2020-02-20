@@ -3,3 +3,4 @@
 *.rpx
 build/
 src/resources/filelist.h
+*.save-failed

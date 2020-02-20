@@ -21,6 +21,7 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	src \
 				src/fs \
+				src/game \
 				src/gui \
 				src/menu \
 				src/resources \
