@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
+#include <map>
+#include <algorithm>
 #include <gui/GuiIconGrid.h>
 #include <gui/GuiController.h>
 #include <coreinit/cache.h>
@@ -23,8 +25,9 @@
 #include "utils/logger.h"
 #include "gui/GameIcon.h"
 
-GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex)
+GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByName)
     : GuiTitleBrowser(w, h, GameIndex),
+      sortByName(sortByName),
       particleBgImage(w, h, 50, 60.0f, 90.0f, 0.6f, 1.0f)
     , touchTrigger(GuiTrigger::CHANNEL_1, GuiTrigger::VPAD_TOUCH)
     , wpadTouchTrigger(GuiTrigger::CHANNEL_2 | GuiTrigger::CHANNEL_3 | GuiTrigger::CHANNEL_4 | GuiTrigger::CHANNEL_5, GuiTrigger::BUTTON_A)
@@ -57,7 +60,7 @@ void GuiIconGrid::setSelectedGame(uint64_t idx) {
         container = x.second;
         if(x.first == idx) {
             container->image->setSelected(true);
-        }else{
+        } else {
             container->image->setSelected(false);
         }
     }
@@ -197,9 +200,28 @@ void GuiIconGrid::updateButtonPositions() {
     int32_t col = 0, row = 0, listOff = 0;
 
     int i = 0;
-    containerMutex.lock();
-    for (auto const& x : gameInfoContainers) {
+    // create an empty vector of pairs
+    std::vector<std::pair<uint64_t,GameInfoContainer*>> vec;
 
+    containerMutex.lock();
+
+    // copy key-value pairs from the map to the vector
+    std::copy(gameInfoContainers.begin(), gameInfoContainers.end(), std::back_inserter<std::vector<std::pair<uint64_t,GameInfoContainer*>>>(vec));
+
+    containerMutex.unlock();
+
+    if(sortByName) {
+        std::sort(vec.begin(), vec.end(),
+        [](const std::pair<uint64_t,GameInfoContainer*>& l, const std::pair<uint64_t,GameInfoContainer*>& r) {
+            if (l.second != r.second)
+                return l.second->info->name.compare(r.second->info->name) <0;
+
+            return l.first < r.first;
+        });
+    }
+
+
+    for (auto const& x : vec) {
         listOff = i / (MAX_COLS * MAX_ROWS);
 
         float posX = currentLeftPosition + listOff * width + ( col * (noIcon.getWidth() + noIcon.getWidth() * 0.5f) - (MAX_COLS * 0.5f - 0.5f) * (noIcon.getWidth() + noIcon.getWidth() * 0.5f) );
@@ -219,7 +241,7 @@ void GuiIconGrid::updateButtonPositions() {
 
         i++;
     }
-    containerMutex.unlock();
+
 }
 
 void GuiIconGrid::draw(CVideo *pVideo) {

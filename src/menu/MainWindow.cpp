@@ -202,7 +202,7 @@ void MainWindow::drawTv(CVideo *video) {
 }
 
 void MainWindow::SetupMainView() {
-    currentTvFrame = new GuiIconGrid(width, height,0);
+    currentTvFrame = new GuiIconGrid(width, height,0, true);
 
     currentTvFrame->setEffect(EFFECT_FADE, 10, 255);
     currentTvFrame->setState(GuiElement::STATE_DISABLED);
@@ -210,7 +210,7 @@ void MainWindow::SetupMainView() {
 
     appendTv(currentTvFrame);
 
-    currentDrcFrame = new GuiIconGrid(width, height,0);
+    currentDrcFrame = new GuiIconGrid(width, height,0, false);
     currentDrcFrame->setEffect(EFFECT_FADE, 10, 255);
     currentDrcFrame->setState(GuiElement::STATE_DISABLED);
     currentDrcFrame->effectFinished.connect(this, &MainWindow::OnOpenEffectFinish);
@@ -239,6 +239,7 @@ void MainWindow::SetupMainView() {
     mainSwitchButtonFrame = new MainDrcButtonsFrame(width, height);
     mainSwitchButtonFrame->settingsButtonClicked.connect(this, &MainWindow::OnSettingsButtonClicked);
     mainSwitchButtonFrame->layoutSwitchClicked.connect(this, &MainWindow::OnLayoutSwitchClicked);
+    mainSwitchButtonFrame->gameListFilterClicked.connect(this, &MainWindow::OnGameListFilterButtonClicked);
     mainSwitchButtonFrame->setState(GuiElement::STATE_DISABLED);
     mainSwitchButtonFrame->setEffect(EFFECT_FADE, 10, 255);
     mainSwitchButtonFrame->setState(GuiElement::STATE_DISABLED);

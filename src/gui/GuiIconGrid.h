@@ -25,7 +25,7 @@
 
 class GuiIconGrid : public GuiTitleBrowser, public sigslot::has_slots<> {
 public:
-    GuiIconGrid(int32_t w, int32_t h, uint64_t selectedTitleId);
+    GuiIconGrid(int32_t w, int32_t h, uint64_t selectedTitleId, bool sortByName);
     virtual ~GuiIconGrid();
 
     void setSelectedGame(uint64_t idx);
@@ -62,6 +62,7 @@ private:
     int32_t targetLeftPosition;
     uint32_t gameLaunchTimer;
     bool bUpdatePositions = false;
+    bool sortByName = false;
 
     class GameInfoContainer {
     public:
