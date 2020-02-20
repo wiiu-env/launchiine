@@ -125,7 +125,11 @@ void GuiIconGrid::OnGameButtonClick(GuiButton *button, const GuiController *cont
 
 void GuiIconGrid::OnGameTitleAdded(gameInfo * info) {
     DEBUG_FUNCTION_LINE("Adding %016llX\n", info->titleId);
-    GameIcon * image = new GameIcon(&noIcon);
+    GuiImageData * imageData = &noIcon;
+    if(info->imageData != NULL){
+        imageData = info->imageData;
+    }
+    GameIcon * image = new GameIcon(imageData);
     image->setRenderReflection(false);
     image->setStrokeRender(false);
     image->setSelected(info->titleId == selectedGame);
