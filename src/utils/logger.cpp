@@ -1,3 +1,5 @@
+#include <thread>
+#include <mutex>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -13,6 +15,7 @@
 static int32_t log_socket __attribute__((section(".data")))= -1;
 static struct sockaddr_in connect_addr __attribute__((section(".data")));
 static volatile int32_t log_lock __attribute__((section(".data"))) = 0;
+static std::recursive_mutex _lock;
 
 void log_init_() {
     int32_t broadcastEnable = 1;
@@ -34,9 +37,7 @@ void log_print_(const char *str) {
         return;
     }
 
-    while(log_lock)
-        OSSleepTicks(OSMicrosecondsToTicks(1000));
-    log_lock = 1;
+    _lock.lock();
 
     int32_t len = strlen(str);
     int32_t ret;
@@ -50,7 +51,7 @@ void log_print_(const char *str) {
         str += ret;
     }
 
-    log_lock = 0;
+    _lock.unlock();
 }
 
 void OSFatal_printf(const char *format, ...) {
