@@ -72,6 +72,7 @@ private:
     GuiButton arrowLeftButton;
 
     GuiImageData noIcon;
+    GuiImageData emptyIcon;
 
     void OnLeftArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
     void OnRightArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
@@ -122,4 +123,8 @@ private:
 
     std::recursive_mutex containerMutex;
     std::map<uint64_t, GameInfoContainer *> gameInfoContainers;
+
+    std::vector<GuiImage *> emptyIcons;
+
+
 };

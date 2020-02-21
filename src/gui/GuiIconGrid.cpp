@@ -49,7 +49,8 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
     , arrowLeftImage(arrowLeftImageData)
     , arrowRightButton(arrowRightImage.getWidth(), arrowRightImage.getHeight())
     , arrowLeftButton(arrowLeftImage.getWidth(), arrowLeftImage.getHeight())
-    , noIcon(Resources::GetFile("noGameIcon.png"), Resources::GetFileSize("noGameIcon.png"), GX2_TEX_CLAMP_MODE_MIRROR) {
+    , noIcon(Resources::GetFile("noGameIcon.png"), Resources::GetFileSize("noGameIcon.png"), GX2_TEX_CLAMP_MODE_MIRROR)
+    , emptyIcon(Resources::GetFile("iconEmpty.png"), Resources::GetFileSize("iconEmpty.png"), GX2_TEX_CLAMP_MODE_MIRROR) {
 
     particleBgImage.setParent(this);
     selectedGame = GameIndex;
@@ -76,6 +77,11 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
     arrowRightButton.setTrigger(&buttonRTrigger);
     arrowRightButton.setSoundClick(buttonClickSound);
     arrowRightButton.clicked.connect(this, &GuiIconGrid::OnRightArrowClick);
+
+    for(int i = 0; i< MAX_COLS * MAX_ROWS *2; i++) {
+        GameIcon * image = new GameIcon(&emptyIcon);
+        emptyIcons.push_back(image);
+    }
 }
 
 GuiIconGrid::~GuiIconGrid() {
@@ -86,6 +92,12 @@ GuiIconGrid::~GuiIconGrid() {
     }
     gameInfoContainers.clear();
     containerMutex.unlock();
+
+    for (auto const& x : emptyIcons) {
+        AsyncExecutor::pushForDelete(x);
+    }
+
+    emptyIcons.clear();
 }
 
 void GuiIconGrid::setSelectedGame(uint64_t idx) {
@@ -113,7 +125,6 @@ uint64_t GuiIconGrid::getSelectedGame(void) {
 }
 
 void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
-
     gameList->lock();
     containerMutex.lock();
     // At first delete the ones that were deleted;
@@ -214,7 +225,7 @@ void GuiIconGrid::OnGameButtonClick(GuiButton *button, const GuiController *cont
 void GuiIconGrid::OnGameTitleAdded(gameInfo * info) {
     DEBUG_FUNCTION_LINE("Adding %016llX\n", info->titleId);
     GuiImageData * imageData = &noIcon;
-    if(info->imageData != NULL){
+    if(info->imageData != NULL) {
         imageData = info->imageData;
     }
     GameIcon * image = new GameIcon(imageData);
