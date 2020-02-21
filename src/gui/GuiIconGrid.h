@@ -94,7 +94,7 @@ private:
 
     class GameInfoContainer {
     public:
-        GameInfoContainer(GuiButton* button, GameIcon * image, gameInfo * info) {
+        GameInfoContainer(GuiButton* button, GuiImage * image, gameInfo * info) {
             this->image = image;
             this->info = info;
             this->button = button;
@@ -115,7 +115,7 @@ private:
             }
         }
 
-        GameIcon * image;
+        GuiImage * image;
         gameInfo * info;
         GuiButton * button;
     };
