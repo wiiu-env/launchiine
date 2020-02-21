@@ -91,7 +91,7 @@ int32_t GameList::readGameList() {
             DCFlushRange(newGameInfo, sizeof(gameInfo));
 
             fullGameList.push_back(newGameInfo);
-            //titleAdded(newGameInfo);
+            titleAdded(newGameInfo);
             cnt++;
         }
     }
