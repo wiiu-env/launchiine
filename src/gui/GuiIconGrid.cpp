@@ -29,6 +29,7 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
     : GuiTitleBrowser(w, h, GameIndex),
       sortByName(sortByName),
       particleBgImage(w, h, 50, 60.0f, 90.0f, 0.6f, 1.0f)
+    , buttonClickSound(Resources::GetSound("button_click.mp3"))
     , touchTrigger(GuiTrigger::CHANNEL_1, GuiTrigger::VPAD_TOUCH)
     , wpadTouchTrigger(GuiTrigger::CHANNEL_2 | GuiTrigger::CHANNEL_3 | GuiTrigger::CHANNEL_4 | GuiTrigger::CHANNEL_5, GuiTrigger::BUTTON_A)
     , leftTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_LEFT | GuiTrigger::STICK_L_LEFT, true)
@@ -53,10 +54,31 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
     , emptyIcon(Resources::GetFile("iconEmpty.png"), Resources::GetFileSize("iconEmpty.png"), GX2_TEX_CLAMP_MODE_MIRROR) {
 
     particleBgImage.setParent(this);
-    selectedGame = GameIndex;
+    setSelectedGame(GameIndex);
     listOffset = selectedGame / (MAX_COLS * MAX_ROWS);
     targetLeftPosition = -listOffset * getWidth();
     currentLeftPosition = targetLeftPosition;
+
+    leftButton.setTrigger(&leftTrigger);
+    leftButton.clicked.connect(this, &GuiIconGrid::OnLeftClick);
+    this->append(&leftButton);
+
+    rightButton.setTrigger(&rightTrigger);
+    rightButton.clicked.connect(this, &GuiIconGrid::OnRightClick);
+    this->append(&rightButton);
+
+    downButton.setTrigger(&downTrigger);
+    downButton.clicked.connect(this, &GuiIconGrid::OnDownClick);
+    this->append(&downButton);
+
+    upButton.setTrigger(&upTrigger);
+    upButton.clicked.connect(this, &GuiIconGrid::OnUpClick);
+    this->append(&upButton);
+
+    launchButton.setTrigger(&buttonATrigger);
+    launchButton.setSoundClick(buttonClickSound);
+    launchButton.clicked.connect(this, &GuiIconGrid::OnLaunchClick);
+    this->append(&launchButton);
 
     arrowLeftButton.setImage(&arrowLeftImage);
     arrowLeftButton.setEffectGrow();
@@ -67,6 +89,7 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
     arrowLeftButton.setTrigger(&buttonLTrigger);
     arrowLeftButton.setSoundClick(buttonClickSound);
     arrowLeftButton.clicked.connect(this, &GuiIconGrid::OnLeftArrowClick);
+    append(&arrowLeftButton);
 
     arrowRightButton.setImage(&arrowRightImage);
     arrowRightButton.setEffectGrow();
@@ -77,7 +100,9 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
     arrowRightButton.setTrigger(&buttonRTrigger);
     arrowRightButton.setSoundClick(buttonClickSound);
     arrowRightButton.clicked.connect(this, &GuiIconGrid::OnRightArrowClick);
+    append(&arrowRightButton);
 
+    // at most we are rendering 2 screens at the same time
     for(int i = 0; i< MAX_COLS * MAX_ROWS *2; i++) {
         GameIcon * image = new GameIcon(&emptyIcon);
         emptyIcons.push_back(image);
@@ -100,6 +125,17 @@ GuiIconGrid::~GuiIconGrid() {
     emptyIcons.clear();
 }
 
+int32_t GuiIconGrid::offsetForTitleId(uint64_t titleId) {
+    int32_t offset = -1;
+    for(uint32_t i = 0; i < position.size(); i++) {
+        if(position.at(i) == titleId) {
+            offset = i;
+            break;
+        }
+    }
+    return offset;
+}
+
 void GuiIconGrid::setSelectedGame(uint64_t idx) {
     this->selectedGame = idx;
 
@@ -108,16 +144,22 @@ void GuiIconGrid::setSelectedGame(uint64_t idx) {
     GameInfoContainer * container = NULL;
     for (auto const& x : gameInfoContainers) {
         container = x.second;
-
-
         if(x.first == idx) {
             container->image->setSelected(true);
         } else {
             container->image->setSelected(false);
         }
     }
-
     containerMutex.unlock();
+
+    int32_t offset = offsetForTitleId(getSelectedGame());
+    if(offset > 0) {
+        uint32_t newPage = offset / (MAX_COLS * MAX_ROWS);
+        if(newPage != (uint32_t) curPage) {
+            curPage = newPage;
+            bUpdatePositions = true;
+        }
+    }
 }
 
 uint64_t GuiIconGrid::getSelectedGame(void) {
@@ -168,37 +210,107 @@ void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
     containerMutex.unlock();
 
     gameList->unlock();
+    setSelectedGame(0);
+    curPage = 0;
+    currentLeftPosition = 0;
     bUpdatePositions = true;
 }
 
 void GuiIconGrid::OnLeftArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
-
+    curPage--;
+    setSelectedGame(0);
+    bUpdatePositions = true;
 }
 
 void GuiIconGrid::OnRightArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
-
+    curPage++;
+    setSelectedGame(0);
+    bUpdatePositions = true;
 }
 
 void GuiIconGrid::OnLeftClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+    int32_t offset = offsetForTitleId(getSelectedGame());
+    if(offset < 0){
+        return;
+    }
+    if((offset % MAX_COLS) == 0) {
+        offset -= ((MAX_COLS * MAX_ROWS) - MAX_COLS) + 1;
+    } else {
+        offset--;
+    }
+    if(offset < 0 || position.empty()) {
+        return;
+    }
+    uint64_t newTitleId = position.at(offset);
+    if(newTitleId > 0) {
+        setSelectedGame(newTitleId);
+    }
 
 }
 
 void GuiIconGrid::OnRightClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
-
+    int32_t offset = offsetForTitleId(getSelectedGame());
+    if(offset < 0){
+        return;
+    }
+    if((offset % MAX_COLS) == MAX_COLS - 1) {
+        offset += ((MAX_COLS * MAX_ROWS) - MAX_COLS) + 1;
+    } else {
+        offset++;
+    }
+    if((uint32_t) offset >= position.size()) {
+        return;
+    }
+    uint64_t newTitleId = position.at(offset);
+    if(newTitleId > 0) {
+        setSelectedGame(newTitleId);
+    }
 }
 
 void GuiIconGrid::OnDownClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+    int32_t offset = offsetForTitleId(getSelectedGame());
+    if(offset < 0){
+        return;
+    }
+    if(offset % (MAX_COLS * MAX_ROWS) < (MAX_COLS * MAX_ROWS) - MAX_COLS) {
+        offset = offset + MAX_COLS;
+    } else {
+        return;
+    }
 
+    if((uint32_t) offset >= position.size()) {
+        return;
+    }
+    uint64_t newTitleId = position.at(offset);
+    if(newTitleId > 0) {
+        setSelectedGame(newTitleId);
+    }
 }
 void GuiIconGrid::OnUpClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+    int32_t offset = offsetForTitleId(getSelectedGame());
+    if(offset < 0){
+        return;
+    }
+    if(offset % (MAX_COLS * MAX_ROWS) >= MAX_COLS) {
+        offset = offset - MAX_COLS;
+    } else {
+        return;
+    }
 
+    if(offset < 0) {
+        return;
+    }
+    uint64_t newTitleId = position.at(offset);
+    if(newTitleId > 0) {
+        setSelectedGame(newTitleId);
+    }
 }
 
 void GuiIconGrid::OnLaunchClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
     //! do not auto launch when wiimote is pointing to screen and presses A
-    //if((trigger == &buttonATrigger) && (controller->chan & (GuiTrigger::CHANNEL_2 | GuiTrigger::CHANNEL_3 | GuiTrigger::CHANNEL_4 | GuiTrigger::CHANNEL_5)) && controller->data.validPointer) {
-    //    return;
-    //}
+    if((trigger == &buttonATrigger) && (controller->chan & (GuiTrigger::CHANNEL_2 | GuiTrigger::CHANNEL_3 | GuiTrigger::CHANNEL_4 | GuiTrigger::CHANNEL_5)) && controller->data.validPointer) {
+        return;
+    }
     DEBUG_FUNCTION_LINE("Tried to launch %s (%016llX)\n", gameInfoContainers[getSelectedGame()]->info->name.c_str(),getSelectedGame());
     gameLaunchClicked(this, getSelectedGame());
 }
@@ -302,9 +414,13 @@ void GuiIconGrid::update(GuiController * c) {
 }
 
 void GuiIconGrid::updateButtonPositions() {
+    arrowRightButton.setState(GuiElement::STATE_DISABLED);
+    arrowRightButton.setVisible(false);
+    arrowLeftButton.setState(GuiElement::STATE_DISABLED);
+    arrowLeftButton.setVisible(false);
+
     int32_t col = 0, row = 0, listOff = 0;
 
-    int i = 0;
     // create an empty vector of pairs
     std::vector<std::pair<uint64_t,GameInfoContainer*>> vec;
 
@@ -314,6 +430,14 @@ void GuiIconGrid::updateButtonPositions() {
     std::copy(gameInfoContainers.begin(), gameInfoContainers.end(), std::back_inserter<std::vector<std::pair<uint64_t,GameInfoContainer*>>>(vec));
 
     containerMutex.unlock();
+
+    for (auto const& x : vec) {
+        remove(x.second->button);
+    }
+
+    for (auto const& x : emptyIcons) {
+        remove(x);
+    }
 
     if(sortByName) {
         std::sort(vec.begin(), vec.end(),
@@ -326,27 +450,82 @@ void GuiIconGrid::updateButtonPositions() {
     }
 
 
-    for (auto const& x : vec) {
-        listOff = i / (MAX_COLS * MAX_ROWS);
+    // TODO somehow be able to adjust the positions.
+    position.clear();
+    for(auto const & x: vec) {
+        position.push_back(x.first);
+    }
 
+    uint32_t elementSize = position.size();
+    uint32_t pages = (elementSize / (MAX_COLS * MAX_ROWS)) +1;
+
+    uint32_t emptyIconUse = 0;
+
+    if(curPage < 0) {
+        curPage = 0;
+    }
+    if((uint32_t) curPage > pages) {
+        curPage = 0;
+    }
+
+    targetLeftPosition = -curPage * getWidth();
+
+    if((uint32_t) curPage < (pages - 1)) {
+        arrowRightButton.clearState(GuiElement::STATE_DISABLED);
+        arrowRightButton.setVisible(true);
+        bringToFront(&arrowRightButton);
+    }
+    if(curPage > 0) {
+        arrowLeftButton.clearState(GuiElement::STATE_DISABLED);
+        arrowLeftButton.setVisible(true);
+        bringToFront(&arrowLeftButton);
+    }
+
+    uint32_t startPage = -(currentLeftPosition / getWidth());
+    uint32_t endPage = startPage;
+
+    if(targetLeftPosition != currentLeftPosition) {
+        endPage++;
+        if(endPage > pages) {
+            endPage = pages;
+        }
+    }
+
+    for(uint32_t i = startPage * (MAX_COLS * MAX_ROWS); i < (endPage + 1) * (MAX_COLS * MAX_ROWS); i++) {
+        listOff = i / (MAX_COLS * MAX_ROWS);
+        GuiElement * element = NULL;
         float posX = currentLeftPosition + listOff * width + ( col * (noIcon.getWidth() + noIcon.getWidth() * 0.5f) - (MAX_COLS * 0.5f - 0.5f) * (noIcon.getWidth() + noIcon.getWidth() * 0.5f) );
         float posY = -row * (noIcon.getHeight() + noIcon.getHeight() * 0.5f) + (MAX_ROWS * 0.5f - 0.5f) * (noIcon.getHeight() + noIcon.getHeight() * 0.5f) + 30.0f;
 
-        if(x.second->button != NULL) {
-            x.second->button->setPosition(posX, posY);
+        if(i < position.size()) {
+            uint64_t titleID = position.at(i);
+            if(titleID > 0) {
+                GameInfoContainer * container = gameInfoContainers[titleID];
+                if(container != NULL) {
+                    element = container->button;
+                }
+            }
         }
+
+        if(element == NULL) {
+            if(emptyIcons.size() <= emptyIconUse) {
+                break;
+            }
+            element = emptyIcons.at(emptyIconUse);
+            emptyIconUse++;
+        }
+        element->setPosition(posX, posY);
+        append(element);
 
         col++;
         if(col >= MAX_COLS) {
             col = 0;
             row++;
         }
-        if(row >= MAX_ROWS)
+        if(row >= MAX_ROWS) {
             row = 0;
-
-        i++;
+        }
     }
-
 }
 
 void GuiIconGrid::draw(CVideo *pVideo) {

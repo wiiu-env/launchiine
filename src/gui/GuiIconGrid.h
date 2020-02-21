@@ -43,11 +43,11 @@ private:
     static const int32_t MAX_ROWS = 3;
     static const int32_t MAX_COLS = 5;
 
-    GuiSound *buttonClickSound;
-
     bool sortByName = false;
 
     GuiParticleImage particleBgImage;
+
+    GuiSound *buttonClickSound;
 
     GuiTrigger touchTrigger;
     GuiTrigger wpadTouchTrigger;
@@ -86,6 +86,9 @@ private:
     void OnGameButtonClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
     void updateButtonPositions();
 
+    int32_t offsetForTitleId(uint64_t titleId);
+
+    int32_t curPage = 0;
     int32_t listOffset;
     uint64_t selectedGame;
     int32_t currentLeftPosition;
@@ -95,7 +98,7 @@ private:
 
     class GameInfoContainer {
     public:
-        GameInfoContainer(GuiButton* button, GuiImage * image, gameInfo * info) {
+        GameInfoContainer(GuiButton* button, GameIcon * image, gameInfo * info) {
             this->image = image;
             this->info = info;
             this->button = button;
@@ -116,13 +119,14 @@ private:
             }
         }
 
-        GuiImage * image;
+        GameIcon * image;
         gameInfo * info;
         GuiButton * button;
     };
 
     std::recursive_mutex containerMutex;
     std::map<uint64_t, GameInfoContainer *> gameInfoContainers;
+    std::vector<uint64_t> position;
 
     std::vector<GuiImage *> emptyIcons;
 
