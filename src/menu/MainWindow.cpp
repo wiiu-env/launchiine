@@ -50,6 +50,8 @@ MainWindow::MainWindow(int32_t w, int32_t h)
 
 MainWindow::~MainWindow() {
     gameList.titleListChanged.disconnect(this);
+    gameList.titleUpdated.disconnect(this);
+    gameList.titleAdded.disconnect(this);
     while(!tvElements.empty()) {
         delete tvElements[0];
         remove(tvElements[0]);
