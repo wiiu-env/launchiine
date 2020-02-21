@@ -31,6 +31,24 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
       particleBgImage(w, h, 50, 60.0f, 90.0f, 0.6f, 1.0f)
     , touchTrigger(GuiTrigger::CHANNEL_1, GuiTrigger::VPAD_TOUCH)
     , wpadTouchTrigger(GuiTrigger::CHANNEL_2 | GuiTrigger::CHANNEL_3 | GuiTrigger::CHANNEL_4 | GuiTrigger::CHANNEL_5, GuiTrigger::BUTTON_A)
+    , leftTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_LEFT | GuiTrigger::STICK_L_LEFT, true)
+    , rightTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_RIGHT | GuiTrigger::STICK_L_RIGHT, true)
+    , downTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_DOWN | GuiTrigger::STICK_L_DOWN, true)
+    , upTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_UP | GuiTrigger::STICK_L_UP, true)
+    , buttonATrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_A, true)
+    , buttonLTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_L, true)
+    , buttonRTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_R, true)
+    , leftButton(w, h)
+    , rightButton(w, h)
+    , downButton(w, h)
+    , upButton(w, h)
+    , launchButton(w, h)
+    , arrowRightImageData(Resources::GetImageData("rightArrow.png"))
+    , arrowLeftImageData(Resources::GetImageData("leftArrow.png"))
+    , arrowRightImage(arrowRightImageData)
+    , arrowLeftImage(arrowLeftImageData)
+    , arrowRightButton(arrowRightImage.getWidth(), arrowRightImage.getHeight())
+    , arrowLeftButton(arrowLeftImage.getWidth(), arrowLeftImage.getHeight())
     , noIcon(Resources::GetFile("noGameIcon.png"), Resources::GetFileSize("noGameIcon.png"), GX2_TEX_CLAMP_MODE_MIRROR) {
 
     particleBgImage.setParent(this);
@@ -38,6 +56,26 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
     listOffset = selectedGame / (MAX_COLS * MAX_ROWS);
     targetLeftPosition = -listOffset * getWidth();
     currentLeftPosition = targetLeftPosition;
+
+    arrowLeftButton.setImage(&arrowLeftImage);
+    arrowLeftButton.setEffectGrow();
+    arrowLeftButton.setPosition(40, 0);
+    arrowLeftButton.setAlignment(ALIGN_LEFT | ALIGN_MIDDLE);
+    arrowLeftButton.setTrigger(&touchTrigger);
+    arrowLeftButton.setTrigger(&wpadTouchTrigger);
+    arrowLeftButton.setTrigger(&buttonLTrigger);
+    arrowLeftButton.setSoundClick(buttonClickSound);
+    arrowLeftButton.clicked.connect(this, &GuiIconGrid::OnLeftArrowClick);
+
+    arrowRightButton.setImage(&arrowRightImage);
+    arrowRightButton.setEffectGrow();
+    arrowRightButton.setPosition(-40, 0);
+    arrowRightButton.setAlignment(ALIGN_RIGHT | ALIGN_MIDDLE);
+    arrowRightButton.setTrigger(&touchTrigger);
+    arrowRightButton.setTrigger(&wpadTouchTrigger);
+    arrowRightButton.setTrigger(&buttonRTrigger);
+    arrowRightButton.setSoundClick(buttonClickSound);
+    arrowRightButton.clicked.connect(this, &GuiIconGrid::OnRightArrowClick);
 }
 
 GuiIconGrid::~GuiIconGrid() {
@@ -58,6 +96,8 @@ void GuiIconGrid::setSelectedGame(uint64_t idx) {
     GameInfoContainer * container = NULL;
     for (auto const& x : gameInfoContainers) {
         container = x.second;
+
+
         if(x.first == idx) {
             container->image->setSelected(true);
         } else {
@@ -115,6 +155,29 @@ void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
     gameList->unlock();
     containerMutex.unlock();
     bUpdatePositions = true;
+}
+
+void GuiIconGrid::OnLeftArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+
+}
+
+void GuiIconGrid::OnRightArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+
+}
+
+void GuiIconGrid::OnLeftClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+
+}
+
+void GuiIconGrid::OnRightClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+
+}
+
+void GuiIconGrid::OnDownClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+
+}
+void GuiIconGrid::OnUpClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+
 }
 
 void GuiIconGrid::OnLaunchClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {

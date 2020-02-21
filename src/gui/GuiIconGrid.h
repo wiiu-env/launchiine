@@ -49,8 +49,35 @@ private:
 
     GuiTrigger touchTrigger;
     GuiTrigger wpadTouchTrigger;
+    GuiTrigger leftTrigger;
+    GuiTrigger rightTrigger;
+    GuiTrigger downTrigger;
+    GuiTrigger upTrigger;
+    GuiTrigger buttonATrigger;
+    GuiTrigger buttonLTrigger;
+    GuiTrigger buttonRTrigger;
+    GuiButton leftButton;
+    GuiButton rightButton;
+    GuiButton downButton;
+    GuiButton upButton;
+    GuiButton launchButton;
+
+    GuiImageData* arrowRightImageData;
+    GuiImageData* arrowLeftImageData;
+    GuiImage arrowRightImage;
+    GuiImage arrowLeftImage;
+    GuiButton arrowRightButton;
+    GuiButton arrowLeftButton;
 
     GuiImageData noIcon;
+
+    void OnLeftArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
+    void OnRightArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
+
+    void OnLeftClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
+    void OnRightClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
+    void OnDownClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
+    void OnUpClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
 
     void OnLaunchClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
     void OnGameButtonClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
