@@ -375,11 +375,14 @@ void GuiIconGrid::OnGameTitleUpdated(gameInfo * info) {
             break;
         }
     }
-    containerMutex.unlock();
 
+    // keep the lock to delay the draw() until the image data is ready.
     if(container != NULL) {
         container->updateImageData();
     }
+
+    containerMutex.unlock();
+
     bUpdatePositions = true;
 }
 
