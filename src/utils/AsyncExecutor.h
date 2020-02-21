@@ -6,7 +6,6 @@
 #include <future>
 #include <thread>
 #include <gui/GuiElement.h>
-#include <system/CMutex.h>
 #include <coreinit/cache.h>
 #include "utils/logger.h"
 
@@ -32,7 +31,7 @@ private:
         DCFlushRange((void*)&exitThread, sizeof(exitThread));
     }
 
-    CMutex mutex;
+    std::recursive_mutex mutex;
     std::thread *  thread;
     volatile bool exitThread = false;
 

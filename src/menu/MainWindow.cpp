@@ -138,7 +138,6 @@ void MainWindow::OnGameTitleUpdated(gameInfo * info) {
 }
 
 void MainWindow::OnGameTitleAdded(gameInfo * info) {
-
     currentTvFrame->OnGameTitleAdded(info);
     if(currentTvFrame != currentDrcFrame) {
         currentDrcFrame->OnGameTitleAdded(info);

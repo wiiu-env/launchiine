@@ -21,7 +21,6 @@
 #include <queue>
 #include <gui/Gui.h>
 #include "game/GameList.h"
-#include "system/CMutex.h"
 #include "KeyboardHelper.h"
 #include "gui/GuiTitleBrowser.h"
 #include "MainDrcButtonsFrame.h"
@@ -147,7 +146,7 @@ private:
 
     GameList gameList;
 
-    CMutex guiMutex;
+    std::recursive_mutex guiMutex;
     KeyboardHelper * keyboardInstance = NULL;
 };
 

@@ -113,8 +113,9 @@ uint64_t GuiIconGrid::getSelectedGame(void) {
 }
 
 void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
-    containerMutex.lock();
+
     gameList->lock();
+    containerMutex.lock();
     // At first delete the ones that were deleted;
     auto it = gameInfoContainers.begin();
     while (it != gameInfoContainers.end()) {
@@ -148,12 +149,14 @@ void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
             }
         }
 
+
         if(container == NULL) {
             OnGameTitleAdded(info);
         }
     }
-    gameList->unlock();
     containerMutex.unlock();
+
+    gameList->unlock();
     bUpdatePositions = true;
 }
 
@@ -249,11 +252,11 @@ void GuiIconGrid::OnGameTitleUpdated(gameInfo * info) {
             break;
         }
     }
+    containerMutex.unlock();
 
     if(container != NULL) {
         container->updateImageData();
     }
-    containerMutex.unlock();
     bUpdatePositions = true;
 }
 

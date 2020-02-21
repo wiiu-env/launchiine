@@ -13,14 +13,13 @@
 #include "fs/FSUtils.h"
 #include "utils/logger.h"
 #include "utils/StringTools.h"
-#include "system/CMutex.h"
 
 void GameList::clear() {
     lock();
     for (auto const& x : fullGameList) {
         if(x != NULL) {
             if(x->imageData != NULL) {
-                delete x->imageData;
+                AsyncExecutor::pushForDelete(x->imageData);
                 x->imageData = NULL;
             }
             delete x;
@@ -36,7 +35,6 @@ void GameList::clear() {
     unlock();
     titleListChanged(this);
 }
-
 
 gameInfo * GameList::getGameInfo(uint64_t titleId) const {
     for (uint32_t i = 0; i < filteredList.size(); ++i) {
@@ -83,8 +81,6 @@ int32_t GameList::readGameList() {
         titles.resize(realTitleCount);
     }
 
-    CMutex extraInfoMutex;
-
     for (auto title_candidate : titles) {
         if((title_candidate.titleId & 0xFFFFFFFF00000000L) == 0x0005000000000000L) {
             gameInfo* newGameInfo = new gameInfo;
@@ -97,41 +93,44 @@ int32_t GameList::readGameList() {
             fullGameList.push_back(newGameInfo);
             titleAdded(newGameInfo);
             cnt++;
-
-            AsyncExecutor::execute([newGameInfo, this, &extraInfoMutex] {
-                extraInfoMutex.lock();
-                DEBUG_FUNCTION_LINE("Load extra infos of %016llX\n",newGameInfo->titleId);
-                ACPMetaXml* meta = (ACPMetaXml*)calloc(1, 0x4000); //TODO fix wut
-                if(meta) {
-                    auto acp = ACPGetTitleMetaXml(newGameInfo->titleId, meta);
-                    if(acp >= 0) {
-                        newGameInfo->name = meta->shortname_en;
-                    }
-                    free(meta);
-                }
-
-                if(newGameInfo->imageData == NULL) {
-                    std::string filepath = "fs:" + newGameInfo->gamePath + META_PATH + "/iconTex.tga";
-                    uint8_t *buffer = NULL;
-                    uint32_t bufferSize = 0;
-                    int iResult = FSUtils::LoadFileToMem(filepath.c_str(), &buffer, &bufferSize);
-
-                    if(iResult > 0) {
-                        GuiImageData * imageData = new GuiImageData(buffer, bufferSize, GX2_TEX_CLAMP_MODE_MIRROR);
-                        if(imageData) {
-                            newGameInfo->imageData = imageData;
-                        }
-
-                        //! free original image buffer which is converted to texture now and not needed anymore
-                        free(buffer);
-                    }
-                }
-                DCFlushRange(newGameInfo, sizeof(gameInfo));
-                titleUpdated(newGameInfo);
-                extraInfoMutex.unlock();
-            });
         }
     }
+
+    AsyncExecutor::execute([this] {
+        lock();
+        for (uint32_t i = 0; i < fullGameList.size(); ++i) {
+            gameInfo *header = fullGameList[i];
+
+            DEBUG_FUNCTION_LINE("Load extra infos of %016llX\n",header->titleId);
+            ACPMetaXml* meta = (ACPMetaXml*)calloc(1, 0x4000); //TODO fix wut
+            if(meta) {
+                auto acp = ACPGetTitleMetaXml(header->titleId, meta);
+                if(acp >= 0) {
+                    header->name = meta->shortname_en;
+                }
+                free(meta);
+            }
+
+            if(header->imageData == NULL) {
+                std::string filepath = "fs:" + header->gamePath + META_PATH + "/iconTex.tga";
+                uint8_t *buffer = NULL;
+                uint32_t bufferSize = 0;
+                int iResult = FSUtils::LoadFileToMem(filepath.c_str(), &buffer, &bufferSize);
+                if(iResult > 0) {
+                    GuiImageData * imageData = new GuiImageData(buffer, bufferSize, GX2_TEX_CLAMP_MODE_MIRROR);
+                    if(imageData) {
+                        header->imageData = imageData;
+                    }
+
+                    //! free original image buffer which is converted to texture now and not needed anymore
+                    free(buffer);
+                }
+            }
+            DCFlushRange(header, sizeof(gameInfo));
+            titleUpdated(header);
+        }
+        unlock();
+    });
 
     return cnt;
 }

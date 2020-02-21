@@ -120,6 +120,6 @@ private:
         GuiButton * button;
     };
 
-    CMutex containerMutex;
+    std::recursive_mutex containerMutex;
     std::map<uint64_t, GameInfoContainer *> gameInfoContainers;
 };

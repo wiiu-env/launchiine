@@ -2,6 +2,7 @@
 #define GAME_LIST_H_
 
 #include <vector>
+#include <mutex>
 #include <stdint.h>
 #include <coreinit/mcp.h>
 #include <gui/sigslot.h>
@@ -132,7 +133,7 @@ protected:
     std::vector<gameInfo *> filteredList;
     std::vector<gameInfo *> fullGameList;
 
-    CMutex _lock;
+    std::recursive_mutex _lock;
 };
 
 #endif
