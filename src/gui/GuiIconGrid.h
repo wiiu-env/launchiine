@@ -45,6 +45,8 @@ private:
 
     GuiSound *buttonClickSound;
 
+    bool sortByName = false;
+
     GuiParticleImage particleBgImage;
 
     GuiTrigger touchTrigger;
@@ -89,7 +91,6 @@ private:
     int32_t targetLeftPosition;
     uint32_t gameLaunchTimer;
     bool bUpdatePositions = false;
-    bool sortByName = false;
 
     class GameInfoContainer {
     public:
