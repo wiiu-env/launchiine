@@ -211,6 +211,7 @@ void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
 
     gameList->unlock();
     setSelectedGame(0);
+    gameSelectionChanged(this, selectedGame);
     curPage = 0;
     currentLeftPosition = 0;
     bUpdatePositions = true;
@@ -230,7 +231,7 @@ void GuiIconGrid::OnRightArrowClick(GuiButton *button, const GuiController *cont
 
 void GuiIconGrid::OnLeftClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
     int32_t offset = offsetForTitleId(getSelectedGame());
-    if(offset < 0){
+    if(offset < 0) {
         return;
     }
     if((offset % MAX_COLS) == 0) {
@@ -244,13 +245,14 @@ void GuiIconGrid::OnLeftClick(GuiButton *button, const GuiController *controller
     uint64_t newTitleId = position.at(offset);
     if(newTitleId > 0) {
         setSelectedGame(newTitleId);
+        gameSelectionChanged(this, selectedGame);
     }
 
 }
 
 void GuiIconGrid::OnRightClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
     int32_t offset = offsetForTitleId(getSelectedGame());
-    if(offset < 0){
+    if(offset < 0) {
         return;
     }
     if((offset % MAX_COLS) == MAX_COLS - 1) {
@@ -264,12 +266,13 @@ void GuiIconGrid::OnRightClick(GuiButton *button, const GuiController *controlle
     uint64_t newTitleId = position.at(offset);
     if(newTitleId > 0) {
         setSelectedGame(newTitleId);
+        gameSelectionChanged(this, selectedGame);
     }
 }
 
 void GuiIconGrid::OnDownClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
     int32_t offset = offsetForTitleId(getSelectedGame());
-    if(offset < 0){
+    if(offset < 0) {
         return;
     }
     if(offset % (MAX_COLS * MAX_ROWS) < (MAX_COLS * MAX_ROWS) - MAX_COLS) {
@@ -284,11 +287,12 @@ void GuiIconGrid::OnDownClick(GuiButton *button, const GuiController *controller
     uint64_t newTitleId = position.at(offset);
     if(newTitleId > 0) {
         setSelectedGame(newTitleId);
+        gameSelectionChanged(this, selectedGame);
     }
 }
 void GuiIconGrid::OnUpClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
     int32_t offset = offsetForTitleId(getSelectedGame());
-    if(offset < 0){
+    if(offset < 0) {
         return;
     }
     if(offset % (MAX_COLS * MAX_ROWS) >= MAX_COLS) {
@@ -303,6 +307,7 @@ void GuiIconGrid::OnUpClick(GuiButton *button, const GuiController *controller, 
     uint64_t newTitleId = position.at(offset);
     if(newTitleId > 0) {
         setSelectedGame(newTitleId);
+        gameSelectionChanged(this, selectedGame);
     }
 }
 

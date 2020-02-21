@@ -24,6 +24,7 @@
 #include "gui/GuiIconGrid.h"
 #include <sysapp/launch.h>
 #include <future>
+#include <coreinit/title.h>
 #include "utils/AsyncExecutor.h"
 
 MainWindow::MainWindow(int32_t w, int32_t h)
@@ -120,7 +121,7 @@ void MainWindow::process() {
             mainSwitchButtonFrame->clearState(GuiElement::STATE_DISABLED);
 
             gameList.filterList(result.c_str());
-        }else{
+        } else {
         }
     }
 }
@@ -371,6 +372,26 @@ void MainWindow::OnGameSelectionChange(GuiTitleBrowser *element, uint64_t select
     }
 }
 
-void MainWindow::OnGameLaunch(GuiTitleBrowser *element, uint64_t selectedIdx) {
+#define HBL_TITLE_ID (0x0005000013374842)
+#define MII_MAKER_JPN_TITLE_ID (0x000500101004A000)
+#define MII_MAKER_USA_TITLE_ID (0x000500101004A100)
+#define MII_MAKER_EUR_TITLE_ID (0x000500101004A200)
 
+extern "C" void _SYSLaunchTitleByPathFromLauncher(const char * path, int len, int);
+
+void MainWindow::OnGameLaunch(GuiTitleBrowser *element, uint64_t titleID) {
+    gameInfo * info = gameList.getGameInfo(titleID);
+    if(info != NULL) {
+        uint64_t titleID = OSGetTitleID();
+
+        if (titleID == HBL_TITLE_ID ||
+                titleID == MII_MAKER_JPN_TITLE_ID ||
+                titleID == MII_MAKER_USA_TITLE_ID ||
+                titleID == MII_MAKER_EUR_TITLE_ID) {
+            SYSLaunchTitle(info->titleId);
+        } else {
+            const char* path = info->gamePath.c_str();
+            _SYSLaunchTitleByPathFromLauncher(path, strlen(path),0);
+        }
+    }
 }
