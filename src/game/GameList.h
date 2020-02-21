@@ -5,6 +5,7 @@
 #include <mutex>
 #include <stdint.h>
 #include <coreinit/mcp.h>
+#include <coreinit/cache.h>
 #include <gui/sigslot.h>
 #include <gui/GuiImageData.h>
 
@@ -19,6 +20,8 @@ class GameList {
 public:
     GameList() : selectedGame(0) { };
     ~GameList() {
+        stopAsyncLoading = true;
+        DCFlushRange(&stopAsyncLoading, sizeof(stopAsyncLoading));
         clear();
     };
 
@@ -134,6 +137,8 @@ protected:
     std::vector<gameInfo *> fullGameList;
 
     std::recursive_mutex _lock;
+
+    bool stopAsyncLoading = false;
 };
 
 #endif

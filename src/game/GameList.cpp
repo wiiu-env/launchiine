@@ -82,7 +82,7 @@ int32_t GameList::readGameList() {
     }
 
     for (auto title_candidate : titles) {
-        if((title_candidate.titleId & 0xFFFFFFFF00000000L) == 0x0005000000000000L) {
+        if(true || (title_candidate.titleId & 0xFFFFFFFF00000000L) == 0x0005000000000000L) {
             gameInfo* newGameInfo = new gameInfo;
             newGameInfo->titleId = title_candidate.titleId;
             newGameInfo->gamePath = title_candidate.path;
@@ -100,6 +100,12 @@ int32_t GameList::readGameList() {
         lock();
         for (uint32_t i = 0; i < fullGameList.size(); ++i) {
             gameInfo *header = fullGameList[i];
+
+            DCFlushRange(&stopAsyncLoading, sizeof(stopAsyncLoading));
+            if(stopAsyncLoading) {
+                DEBUG_FUNCTION_LINE("Stop async title loading\n");
+                break;
+            }
 
             DEBUG_FUNCTION_LINE("Load extra infos of %016llX\n",header->titleId);
             ACPMetaXml* meta = (ACPMetaXml*)calloc(1, 0x4000); //TODO fix wut
