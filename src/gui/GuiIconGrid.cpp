@@ -583,9 +583,16 @@ void GuiIconGrid::updateButtonPositions() {
     uint32_t endPage = startPage;
 
     if(targetLeftPosition != currentLeftPosition) {
+        for (auto const& x : vec) {
+            x.second->button->setHoldable(false);
+        }
         endPage++;
         if(endPage > pages) {
             endPage = pages;
+        }
+    }else{
+        for (auto const& x : vec) {
+            x.second->button->setHoldable(true);
         }
     }
 
