@@ -88,8 +88,12 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
     arrowLeftButton.setTrigger(&touchTrigger);
     arrowLeftButton.setTrigger(&wpadTouchTrigger);
     arrowLeftButton.setTrigger(&buttonLTrigger);
+    arrowLeftButton.setHoldable(true);
     arrowLeftButton.setSoundClick(buttonClickSound);
     arrowLeftButton.clicked.connect(this, &GuiIconGrid::OnLeftArrowClick);
+    arrowLeftButton.held.connect(this, &GuiIconGrid::OnLeftArrowHeld);
+    arrowLeftButton.released.connect(this, &GuiIconGrid::OnLeftArrowReleased);
+
     append(&arrowLeftButton);
 
     arrowRightButton.setImage(&arrowRightImage);
@@ -99,8 +103,11 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
     arrowRightButton.setTrigger(&touchTrigger);
     arrowRightButton.setTrigger(&wpadTouchTrigger);
     arrowRightButton.setTrigger(&buttonRTrigger);
+    arrowRightButton.setHoldable(true);
     arrowRightButton.setSoundClick(buttonClickSound);
     arrowRightButton.clicked.connect(this, &GuiIconGrid::OnRightArrowClick);
+    arrowRightButton.held.connect(this, &GuiIconGrid::OnRightArrowHeld);
+    arrowRightButton.released.connect(this, &GuiIconGrid::OnRightArrowReleased);
     append(&arrowRightButton);
 
     // at most we are rendering 2 screens at the same time
@@ -222,14 +229,14 @@ void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
 }
 
 void GuiIconGrid::OnLeftArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+    //setSelectedGame(0);
     curPage--;
-    setSelectedGame(0);
     bUpdatePositions = true;
 }
 
 void GuiIconGrid::OnRightArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+    //setSelectedGame(0);
     curPage++;
-    setSelectedGame(0);
     bUpdatePositions = true;
 }
 
@@ -322,6 +329,38 @@ void GuiIconGrid::OnLaunchClick(GuiButton *button, const GuiController *controll
     }
     DEBUG_FUNCTION_LINE("Tried to launch %s (%016llX)\n", gameInfoContainers[getSelectedGame()]->info->name.c_str(),getSelectedGame());
     gameLaunchClicked(this, getSelectedGame());
+}
+
+
+void GuiIconGrid::OnLeftArrowHeld(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+    if(currentlyHeld != NULL) {
+        if(lArrowHeldCounter++ > 30) {
+            OnLeftArrowClick(button,controller,trigger);
+            lArrowHeldCounter = 0;
+        }
+    } else {
+        lArrowHeldCounter = 0;
+    }
+}
+
+void GuiIconGrid::OnLeftArrowReleased(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+    lArrowHeldCounter = 0;
+}
+
+void GuiIconGrid::OnRightArrowHeld(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+    if(currentlyHeld != NULL) {
+        if(rArrowHeldCounter++ > 30) {
+            DEBUG_FUNCTION_LINE("CLICK\n");
+            OnRightArrowClick(button,controller,trigger);
+            rArrowHeldCounter = 0;
+        }
+    } else {
+        rArrowHeldCounter = 0;
+    }
+}
+
+void GuiIconGrid::OnRightArrowReleased(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+    rArrowHeldCounter = 0;
 }
 
 

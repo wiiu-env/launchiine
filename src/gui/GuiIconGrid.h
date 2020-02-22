@@ -91,9 +91,18 @@ private:
     void OnGameButtonPointedOn(GuiButton *button, const GuiController *controller);
     void OnGameButtonPointedOff(GuiButton *button, const GuiController *controller);
     void OnDrag(GuiDragListener *button, const GuiController *controller, GuiTrigger *trigger, int32_t dx, int32_t dy);
+
+    void OnLeftArrowHeld(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
+    void OnRightArrowHeld(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
+    void OnLeftArrowReleased(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
+    void OnRightArrowReleased(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
+
     void updateButtonPositions();
 
     int32_t offsetForTitleId(uint64_t titleId);
+
+    uint32_t lArrowHeldCounter = 0;
+    uint32_t rArrowHeldCounter = 0;
 
     int32_t curPage = 0;
     int32_t listOffset;
