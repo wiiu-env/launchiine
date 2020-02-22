@@ -476,7 +476,17 @@ void GuiIconGrid::OnGameTitleAdded(gameInfo * info) {
     this->append(button);
 
     positionMutex.lock();
+    bool foundFreePlace = false;
+    for(uint32_t i = 0; i < position.size(); i++) {
+        if(position[i] == 0) {
+            position[i] = info->titleId;
+            foundFreePlace = true;
+            break;
+        }
+    }
+    if(!foundFreePlace) {
         position.push_back(info->titleId);
+    }
     positionMutex.unlock();
 
     bUpdatePositions = true;
