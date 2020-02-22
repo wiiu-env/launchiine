@@ -115,6 +115,14 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
     for(int i = 0; i< MAX_COLS * MAX_ROWS *2; i++) {
         GameIcon * image = new GameIcon(&emptyIcon);
         emptyIcons.push_back(image);
+        GuiButton * button = new GuiButton(emptyIcon.getWidth(), emptyIcon.getHeight());
+        button->setImage(image);
+        button->setPosition(0, 0);
+        //button->setEffectGrow();
+        button->setHoldable(true);
+        button->setTrigger(&touchTrigger);
+        button->held.connect(this, &GuiIconGrid::OnGameButtonHeld);
+        emptyButtons.push_back(button);
     }
 
     dragListener.setTrigger(&touchTrigger);
@@ -139,10 +147,15 @@ GuiIconGrid::~GuiIconGrid() {
     gameInfoContainers.clear();
     containerMutex.unlock();
 
-    for (auto const& x : emptyIcons) {
-        AsyncExecutor::pushForDelete(x);
+    for (auto const& x : emptyButtons) {
+        delete x;
     }
 
+    for (auto const& x : emptyIcons) {
+        delete x;
+    }
+
+    emptyButtons.clear();
     emptyIcons.clear();
 }
 
@@ -374,7 +387,17 @@ void GuiIconGrid::OnRightArrowReleased(GuiButton *button, const GuiController *c
 
 void GuiIconGrid::OnGameButtonHeld(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
     if(currentlyHeld == NULL) {
-        currentlyHeld = button;
+        bool found = false;
+        // We don't want to drag empty buttons
+        for(auto const & x : emptyButtons) {
+            if(x == button) {
+                found  = true;
+                break;
+            }
+        }
+        if(!found) {
+            currentlyHeld = button;
+        }
     }
     if(currentlyHeld != NULL && currentlyHeld != button) {
         dragTarget = button;
@@ -491,14 +514,20 @@ void GuiIconGrid::process() {
                 for (auto const& x : vec) {
                     if(x.second->button == dragTarget) {
                         targetTitleId = x.first;
+                        break;
                     }
                 }
 
-                if(targetTitleId > 0) {
-                    for(uint32_t i = 0; i< position.size(); i++) {
-                        if(position[i] == targetTitleId) {
+                for(uint32_t i = 0; i< positionButtons.size(); i++) {
+                    if(positionButtons[i] == dragTarget) {
+                        if(i < position.size() && i != currentlyHeldPosition) {
                             position[i] = currentlyHeldTitleId;
+                            DEBUG_FUNCTION_LINE("Set position to title id to %d\n", i, currentlyHeldPosition);
+                        } else {
+                            targetTitleId = currentlyHeldTitleId;
                         }
+
+                        break;
                     }
                 }
 
@@ -576,7 +605,7 @@ void GuiIconGrid::updateButtonPositions() {
         remove(x.second->button);
     }
 
-    for (auto const& x : emptyIcons) {
+    for (auto const& x : emptyButtons) {
         remove(x);
     }
 
@@ -590,7 +619,6 @@ void GuiIconGrid::updateButtonPositions() {
         });
     }
 
-
     // TODO somehow be able to adjust the positions.
 
     //position.clear();
@@ -603,6 +631,9 @@ void GuiIconGrid::updateButtonPositions() {
 
     uint32_t elementSize = position.size();
     uint32_t pages = (elementSize / (MAX_COLS * MAX_ROWS)) +1;
+    if(elementSize % (MAX_COLS * MAX_ROWS) == 0){
+        pages--;
+    }
 
     uint32_t emptyIconUse = 0;
 
@@ -637,15 +668,21 @@ void GuiIconGrid::updateButtonPositions() {
         if(endPage > pages) {
             endPage = pages;
         }
-    }else{
+    } else {
         for (auto const& x : vec) {
             x.second->button->setHoldable(true);
         }
     }
+    uint32_t startValue = startPage * (MAX_COLS * MAX_ROWS);
+
+    positionButtons.clear();
+    for(uint32_t i = 0; i<startValue; i++) {
+        positionButtons.push_back(NULL);
+    }
 
     for(uint32_t i = startPage * (MAX_COLS * MAX_ROWS); i < (endPage + 1) * (MAX_COLS * MAX_ROWS); i++) {
         listOff = i / (MAX_COLS * MAX_ROWS);
-        GuiElement * element = NULL;
+        GuiButton * element = NULL;
         float posX = currentLeftPosition + listOff * width + ( col * (noIcon.getWidth() + noIcon.getWidth() * 0.5f) - (MAX_COLS * 0.5f - 0.5f) * (noIcon.getWidth() + noIcon.getWidth() * 0.5f) );
         float posY = -row * (noIcon.getHeight() + noIcon.getHeight() * 0.5f) + (MAX_ROWS * 0.5f - 0.5f) * (noIcon.getHeight() + noIcon.getHeight() * 0.5f) + 30.0f;
 
@@ -665,12 +702,13 @@ void GuiIconGrid::updateButtonPositions() {
         }
 
         if(element == NULL) {
-            if(emptyIcons.size() <= emptyIconUse) {
+            if(emptyButtons.size() <= emptyIconUse) {
                 break;
             }
-            element = emptyIcons.at(emptyIconUse);
+            element = emptyButtons.at(emptyIconUse);
             emptyIconUse++;
         }
+        positionButtons.push_back(element);
         element->setPosition(posX, posY);
         append(element);
 
@@ -685,6 +723,11 @@ void GuiIconGrid::updateButtonPositions() {
     }
     if(currentlyHeld != NULL) {
         append(currentlyHeld);
+    }
+    if(positionButtons.size() > position.size()) {
+        for(uint32_t i = 0; i < positionButtons.size() - position.size(); i++) {
+            position.push_back(0);
+        }
     }
 }
 
