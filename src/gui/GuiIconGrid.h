@@ -19,6 +19,7 @@
 #include <map>
 #include "gui/GuiTitleBrowser.h"
 #include "gui/GameIcon.h"
+#include "gui/GuiDragListener.h"
 #include <gui/GuiParticleImage.h>
 #include "utils/AsyncExecutor.h"
 #include "utils/logger.h"
@@ -74,6 +75,8 @@ private:
     GuiImageData noIcon;
     GuiImageData emptyIcon;
 
+    GuiDragListener dragListener;
+
     void OnLeftArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
     void OnRightArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
 
@@ -84,6 +87,10 @@ private:
 
     void OnLaunchClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
     void OnGameButtonClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
+    void OnGameButtonHeld(GuiButton *button, const GuiController *controller, GuiTrigger *trigger);
+    void OnGameButtonPointedOn(GuiButton *button, const GuiController *controller);
+    void OnGameButtonPointedOff(GuiButton *button, const GuiController *controller);
+    void OnDrag(GuiDragListener *button, const GuiController *controller, GuiTrigger *trigger, int32_t dx, int32_t dy);
     void updateButtonPositions();
 
     int32_t offsetForTitleId(uint64_t titleId);
@@ -95,6 +102,10 @@ private:
     int32_t targetLeftPosition;
     uint32_t gameLaunchTimer;
     bool bUpdatePositions = false;
+    GuiButton * currentlyHeld = NULL;
+    uint64_t currentlyHeldTitleId = 0;
+    int32_t currentlyHeldPosition = -1;
+    GuiButton * dragTarget = NULL;
 
     class GameInfoContainer {
     public:

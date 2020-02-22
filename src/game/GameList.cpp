@@ -82,7 +82,7 @@ int32_t GameList::readGameList() {
     }
 
     for (auto title_candidate : titles) {
-        if(true || (title_candidate.titleId & 0xFFFFFFFF00000000L) == 0x0005000000000000L) {
+        if((title_candidate.titleId & 0xFFFFFFFF00000000L) == 0x0005000000000000L) {
             gameInfo* newGameInfo = new gameInfo;
             newGameInfo->titleId = title_candidate.titleId;
             newGameInfo->gamePath = title_candidate.path;

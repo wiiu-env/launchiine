@@ -51,7 +51,8 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
     , arrowRightButton(arrowRightImage.getWidth(), arrowRightImage.getHeight())
     , arrowLeftButton(arrowLeftImage.getWidth(), arrowLeftImage.getHeight())
     , noIcon(Resources::GetFile("noGameIcon.png"), Resources::GetFileSize("noGameIcon.png"), GX2_TEX_CLAMP_MODE_MIRROR)
-    , emptyIcon(Resources::GetFile("iconEmpty.png"), Resources::GetFileSize("iconEmpty.png"), GX2_TEX_CLAMP_MODE_MIRROR) {
+    , emptyIcon(Resources::GetFile("iconEmpty.png"), Resources::GetFileSize("iconEmpty.png"), GX2_TEX_CLAMP_MODE_MIRROR)
+    , dragListener(w,h) {
 
     particleBgImage.setParent(this);
     setSelectedGame(GameIndex);
@@ -107,6 +108,12 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
         GameIcon * image = new GameIcon(&emptyIcon);
         emptyIcons.push_back(image);
     }
+
+    dragListener.setTrigger(&touchTrigger);
+    dragListener.setTrigger(&wpadTouchTrigger);
+    dragListener.dragged.connect(this, &GuiIconGrid::OnDrag);
+
+    append(&dragListener);
 }
 
 GuiIconGrid::~GuiIconGrid() {
@@ -140,7 +147,6 @@ void GuiIconGrid::setSelectedGame(uint64_t idx) {
     this->selectedGame = idx;
 
     containerMutex.lock();
-
     GameInfoContainer * container = NULL;
     for (auto const& x : gameInfoContainers) {
         container = x.second;
@@ -201,8 +207,6 @@ void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
                 break;
             }
         }
-
-
         if(container == NULL) {
             OnGameTitleAdded(info);
         }
@@ -321,6 +325,31 @@ void GuiIconGrid::OnLaunchClick(GuiButton *button, const GuiController *controll
 }
 
 
+void GuiIconGrid::OnGameButtonHeld(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
+    if(currentlyHeld == NULL) {
+        currentlyHeld = button;
+    }
+    if(currentlyHeld != NULL && currentlyHeld != button) {
+        dragTarget = button;
+    }
+}
+
+void GuiIconGrid::OnGameButtonPointedOn(GuiButton *button, const GuiController *controller) {
+
+}
+
+void GuiIconGrid::OnGameButtonPointedOff(GuiButton *button, const GuiController *controller) {
+
+}
+
+void GuiIconGrid::OnDrag(GuiDragListener  * element, const GuiController *controller, GuiTrigger *trigger, int32_t dx, int32_t dy) {
+    if(currentlyHeld != NULL) {
+        currentlyHeld->setPosition(currentlyHeld->getOffsetX() + dx, currentlyHeld->getOffsetY() + dy);
+    }
+    // reset the target when we move.
+    dragTarget = NULL;
+}
+
 void GuiIconGrid::OnGameButtonClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
     containerMutex.lock();
     for (auto const& x : gameInfoContainers) {
@@ -361,12 +390,19 @@ void GuiIconGrid::OnGameTitleAdded(gameInfo * info) {
     //button->setClickable( (idx < gameList->size()) );
     //button->setSelectable( (idx < gameList->size()) );
     button->clicked.connect(this, &GuiIconGrid::OnGameButtonClick);
+    button->setHoldable(true);
+    button->held.connect(this, &GuiIconGrid::OnGameButtonHeld);
+    button->pointedOn.connect(this, &GuiIconGrid::OnGameButtonPointedOn);
+    button->pointedOff.connect(this, &GuiIconGrid::OnGameButtonPointedOff);
+    //button->dragged.connect(this, &GuiIconGrid::OnGameButtonDragged);
 
     GameInfoContainer * container = new GameInfoContainer(button, image, info);
     containerMutex.lock();
     gameInfoContainers[info->titleId] = container;
     containerMutex.unlock();
     this->append(button);
+
+    position.push_back(info->titleId);
 
     bUpdatePositions = true;
 }
@@ -392,6 +428,53 @@ void GuiIconGrid::OnGameTitleUpdated(gameInfo * info) {
 }
 
 void GuiIconGrid::process() {
+    if(currentlyHeld != NULL) {
+        if(!currentlyHeld->isStateSet(GuiElement::STATE_HELD)) {
+            DEBUG_FUNCTION_LINE("Not held anymore\n");
+
+            if(dragTarget) {
+                DEBUG_FUNCTION_LINE("Let's swap\n");
+
+                std::vector<std::pair<uint64_t,GameInfoContainer*>> vec;
+                containerMutex.lock();
+                // copy key-value pairs from the map to the vector
+                std::copy(gameInfoContainers.begin(), gameInfoContainers.end(), std::back_inserter<std::vector<std::pair<uint64_t,GameInfoContainer*>>>(vec));
+                containerMutex.unlock();
+                uint64_t targetTitleId = 0;
+                for (auto const& x : vec) {
+                    if(x.second->button == dragTarget) {
+                        targetTitleId = x.first;
+                    }
+                }
+
+                if(targetTitleId > 0) {
+                    for(uint32_t i = 0; i< position.size(); i++) {
+                        if(position[i] == targetTitleId) {
+                            position[i] = currentlyHeldTitleId;
+                        }
+                    }
+                }
+
+                if(currentlyHeldPosition >= 0 && currentlyHeldPosition <= (int32_t) position.size()) {
+                    position[currentlyHeldPosition] = targetTitleId;
+                }
+                dragTarget = NULL;
+            } else {
+                if(currentlyHeldPosition >= 0 && currentlyHeldPosition <= (int32_t) position.size()) {
+                    position[currentlyHeldPosition] = currentlyHeldTitleId;
+                }
+            }
+            currentlyHeld = NULL;
+            currentlyHeldTitleId = 0;
+
+            currentlyHeldPosition = -1;
+            bUpdatePositions = true;
+        } else {
+            //DEBUG_FUNCTION_LINE("Holding it\n");
+            bUpdatePositions = true;
+        }
+    }
+
     if(currentLeftPosition < targetLeftPosition) {
         currentLeftPosition += 35;
 
@@ -440,6 +523,9 @@ void GuiIconGrid::updateButtonPositions() {
     containerMutex.unlock();
 
     for (auto const& x : vec) {
+        if(x.second->button == currentlyHeld) {
+            currentlyHeldTitleId = x.first;
+        }
         remove(x.second->button);
     }
 
@@ -459,9 +545,13 @@ void GuiIconGrid::updateButtonPositions() {
 
 
     // TODO somehow be able to adjust the positions.
-    position.clear();
-    for(auto const & x: vec) {
-        position.push_back(x.first);
+
+    //position.clear();
+    for(uint32_t i = 0; i<position.size(); i++) {
+        if(position[i] == currentlyHeldTitleId) {
+            currentlyHeldPosition = i;
+            position[i] = 0;
+        }
     }
 
     uint32_t elementSize = position.size();
@@ -508,7 +598,12 @@ void GuiIconGrid::updateButtonPositions() {
         if(i < position.size()) {
             uint64_t titleID = position.at(i);
             if(titleID > 0) {
-                GameInfoContainer * container = gameInfoContainers[titleID];
+                GameInfoContainer * container = NULL;
+                containerMutex.lock();
+                if(gameInfoContainers.find(titleID) != gameInfoContainers.end()) {
+                    container = gameInfoContainers[titleID];
+                }
+                containerMutex.unlock();
                 if(container != NULL) {
                     element = container->button;
                 }
@@ -534,10 +629,12 @@ void GuiIconGrid::updateButtonPositions() {
             row = 0;
         }
     }
+    if(currentlyHeld != NULL) {
+        append(currentlyHeld);
+    }
 }
 
 void GuiIconGrid::draw(CVideo *pVideo) {
-
     //! the BG needs to be rendered to stencil
     pVideo->setStencilRender(true);
     particleBgImage.draw(pVideo);
