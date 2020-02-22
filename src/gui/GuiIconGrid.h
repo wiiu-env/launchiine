@@ -50,6 +50,7 @@ private:
 
     GuiSound *buttonClickSound;
 
+    GuiText gameTitle;
     GuiTrigger touchTrigger;
     GuiTrigger wpadTouchTrigger;
     GuiTrigger leftTrigger;

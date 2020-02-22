@@ -30,6 +30,7 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
       sortByName(sortByName),
       particleBgImage(w, h, 50, 60.0f, 90.0f, 0.6f, 1.0f)
     , buttonClickSound(Resources::GetSound("button_click.mp3"))
+    , gameTitle((char*)NULL, 52, glm::vec4(1.0f))
     , touchTrigger(GuiTrigger::CHANNEL_1, GuiTrigger::VPAD_TOUCH)
     , wpadTouchTrigger(GuiTrigger::CHANNEL_2 | GuiTrigger::CHANNEL_3 | GuiTrigger::CHANNEL_4 | GuiTrigger::CHANNEL_5, GuiTrigger::BUTTON_A)
     , leftTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_LEFT | GuiTrigger::STICK_L_LEFT, true)
@@ -121,6 +122,12 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex,bool sortByNam
     dragListener.dragged.connect(this, &GuiIconGrid::OnDrag);
 
     append(&dragListener);
+
+    gameTitle.setPosition(0, -320);
+    gameTitle.setBlurGlowColor(5.0f, glm::vec4(0.109804, 0.6549, 1.0f, 1.0f));
+    gameTitle.setMaxWidth(900, GuiText::DOTTED);
+    gameTitle.setText("");
+    append(&gameTitle);
 }
 
 GuiIconGrid::~GuiIconGrid() {
@@ -159,6 +166,7 @@ void GuiIconGrid::setSelectedGame(uint64_t idx) {
         container = x.second;
         if(x.first == idx) {
             container->image->setSelected(true);
+            gameTitle.setText(container->info->name.c_str());
         } else {
             container->image->setSelected(false);
         }
