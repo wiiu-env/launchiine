@@ -145,6 +145,7 @@ private:
         GuiButton * button;
     };
 
+    std::recursive_mutex positionMutex;
     std::recursive_mutex containerMutex;
     std::map<uint64_t, GameInfoContainer *> gameInfoContainers;
     std::vector<uint64_t> position;

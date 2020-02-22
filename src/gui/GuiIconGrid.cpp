@@ -161,12 +161,14 @@ GuiIconGrid::~GuiIconGrid() {
 
 int32_t GuiIconGrid::offsetForTitleId(uint64_t titleId) {
     int32_t offset = -1;
+    positionMutex.lock();
     for(uint32_t i = 0; i < position.size(); i++) {
         if(position.at(i) == titleId) {
             offset = i;
             break;
         }
     }
+    positionMutex.unlock();
     return offset;
 }
 
@@ -203,6 +205,7 @@ uint64_t GuiIconGrid::getSelectedGame(void) {
 void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
     gameList->lock();
     containerMutex.lock();
+    positionMutex.lock();
     // At first delete the ones that were deleted;
     auto it = gameInfoContainers.begin();
     while (it != gameInfoContainers.end()) {
@@ -239,8 +242,8 @@ void GuiIconGrid::OnGameTitleListUpdated(GameList * gameList) {
             OnGameTitleAdded(info);
         }
     }
+    positionMutex.unlock();
     containerMutex.unlock();
-
     gameList->unlock();
     setSelectedGame(0);
     gameSelectionChanged(this, selectedGame);
@@ -472,7 +475,9 @@ void GuiIconGrid::OnGameTitleAdded(gameInfo * info) {
     containerMutex.unlock();
     this->append(button);
 
-    position.push_back(info->titleId);
+    positionMutex.lock();
+        position.push_back(info->titleId);
+    positionMutex.unlock();
 
     bUpdatePositions = true;
 }
@@ -501,7 +506,7 @@ void GuiIconGrid::process() {
     if(currentlyHeld != NULL) {
         if(!currentlyHeld->isStateSet(GuiElement::STATE_HELD)) {
             DEBUG_FUNCTION_LINE("Not held anymore\n");
-
+            positionMutex.lock();
             if(dragTarget) {
                 DEBUG_FUNCTION_LINE("Let's swap\n");
 
@@ -517,7 +522,6 @@ void GuiIconGrid::process() {
                         break;
                     }
                 }
-
                 for(uint32_t i = 0; i< positionButtons.size(); i++) {
                     if(positionButtons[i] == dragTarget) {
                         if(i < position.size() && i != currentlyHeldPosition) {
@@ -530,16 +534,17 @@ void GuiIconGrid::process() {
                         break;
                     }
                 }
-
                 if(currentlyHeldPosition >= 0 && currentlyHeldPosition <= (int32_t) position.size()) {
                     position[currentlyHeldPosition] = targetTitleId;
                 }
+
                 dragTarget = NULL;
             } else {
                 if(currentlyHeldPosition >= 0 && currentlyHeldPosition <= (int32_t) position.size()) {
                     position[currentlyHeldPosition] = currentlyHeldTitleId;
                 }
             }
+            positionMutex.unlock();
             currentlyHeld = NULL;
             currentlyHeldTitleId = 0;
 
@@ -581,6 +586,7 @@ void GuiIconGrid::update(GuiController * c) {
 }
 
 void GuiIconGrid::updateButtonPositions() {
+    positionMutex.lock();
     arrowRightButton.setState(GuiElement::STATE_DISABLED);
     arrowRightButton.setVisible(false);
     arrowLeftButton.setState(GuiElement::STATE_DISABLED);
@@ -631,7 +637,7 @@ void GuiIconGrid::updateButtonPositions() {
 
     uint32_t elementSize = position.size();
     uint32_t pages = (elementSize / (MAX_COLS * MAX_ROWS)) +1;
-    if(elementSize % (MAX_COLS * MAX_ROWS) == 0){
+    if(elementSize % (MAX_COLS * MAX_ROWS) == 0) {
         pages--;
     }
 
@@ -724,11 +730,12 @@ void GuiIconGrid::updateButtonPositions() {
     if(currentlyHeld != NULL) {
         append(currentlyHeld);
     }
-    if(positionButtons.size() > position.size()) {
+    if(positionButtons.size() > position.size() && targetLeftPosition == currentLeftPosition) {
         for(uint32_t i = 0; i < positionButtons.size() - position.size(); i++) {
             position.push_back(0);
         }
     }
+    positionMutex.unlock();
 }
 
 void GuiIconGrid::draw(CVideo *pVideo) {
@@ -738,6 +745,8 @@ void GuiIconGrid::draw(CVideo *pVideo) {
     pVideo->setStencilRender(false);
 
     containerMutex.lock();
+    positionMutex.lock();
     GuiFrame::draw(pVideo);
+    positionMutex.unlock();
     containerMutex.unlock();
 }
