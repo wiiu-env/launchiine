@@ -153,15 +153,6 @@ void Application::fadeOut() {
 
         video->waitForVSync();
     }
-
-    //! one last cleared black screen
-    video->prepareDrcRendering();
-    video->drcDrawDone();
-    video->prepareTvRendering();
-    video->tvDrawDone();
-    video->waitForVSync();
-    video->tvEnable(false);
-    video->drcEnable(false);
 }
 
 bool Application::procUI(void) {
@@ -178,8 +169,8 @@ bool Application::procUI(void) {
         DEBUG_FUNCTION_LINE("PROCUI_STATUS_RELEASE_FOREGROUND\n");
         if(video != NULL) {
             // we can turn of the screen but we don't need to and it will display the last image
-            video->tvEnable(true);
-            video->drcEnable(true);
+            video->tvEnable(false);
+            video->drcEnable(false);
 
             DEBUG_FUNCTION_LINE("delete fontSystem\n");
             delete fontSystem;
