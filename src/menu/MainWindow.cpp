@@ -45,7 +45,7 @@ MainWindow::MainWindow(int32_t w, int32_t h)
     gameList.titleListChanged.connect(this, &MainWindow::OnGameTitleListChanged);
     gameList.titleUpdated.connect(this, &MainWindow::OnGameTitleUpdated);
     gameList.titleAdded.connect(this, &MainWindow::OnGameTitleAdded);
-    AsyncExecutor::execute([&] {gameList.loadUnfiltered();});
+    AsyncExecutor::execute([&] {gameList.load();});
 
 }
 
@@ -119,8 +119,6 @@ void MainWindow::process() {
             currentTvFrame->clearState(GuiElement::STATE_DISABLED);
             currentDrcFrame->clearState(GuiElement::STATE_DISABLED);
             mainSwitchButtonFrame->clearState(GuiElement::STATE_DISABLED);
-
-            gameList.filterList(result.c_str());
         } else {
         }
     }

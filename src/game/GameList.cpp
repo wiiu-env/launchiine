@@ -9,10 +9,17 @@
 #include "GameList.h"
 #include "common/common.h"
 
-#include "fs/DirList.h"
 #include "fs/FSUtils.h"
 #include "utils/logger.h"
-#include "utils/StringTools.h"
+
+GameList::GameList() {
+}
+
+GameList::~GameList() {
+    stopAsyncLoading = true;
+    DCFlushRange(&stopAsyncLoading, sizeof(stopAsyncLoading));
+    clear();
+};
 
 void GameList::clear() {
     lock();
@@ -25,24 +32,24 @@ void GameList::clear() {
             delete x;
         }
     }
-    gameFilter.clear();
     fullGameList.clear();
-    filteredList.clear();
     //! Clear memory of the vector completely
-    std::vector<gameInfo *>().swap(filteredList);
     std::vector<gameInfo*>().swap(fullGameList);
-
     unlock();
     titleListChanged(this);
 }
 
-gameInfo * GameList::getGameInfo(uint64_t titleId) const {
-    for (uint32_t i = 0; i < filteredList.size(); ++i) {
-        if(titleId == filteredList[i]->titleId)
-            return filteredList[i];
+gameInfo * GameList::getGameInfo(uint64_t titleId){
+    gameInfo * result = NULL;
+    lock();
+    for (uint32_t i = 0; i < fullGameList.size(); ++i) {
+        if(titleId == fullGameList[i]->titleId){
+            result = fullGameList[i];
+            break;
+        }
     }
-
-    return NULL;
+    unlock();
+    return result;
 }
 
 extern "C" int ACPGetTitleMetaXml(uint64_t titleid, ACPMetaXml*);
@@ -82,7 +89,7 @@ int32_t GameList::readGameList() {
     }
 
     for (auto title_candidate : titles) {
-        if((title_candidate.titleId & 0xFFFFFFFF00000000L) == 0x0005000000000000L) {
+        if(true || (title_candidate.titleId & 0xFFFFFFFF00000000L) == 0x0005000000000000L) {
             gameInfo* newGameInfo = new gameInfo;
             newGameInfo->titleId = title_candidate.titleId;
             newGameInfo->gamePath = title_candidate.path;
@@ -183,78 +190,17 @@ void GameList::updateTitleInfo() {
     }
 }
 
-void GameList::internalFilterList(std::vector<gameInfo*> &fullList) {
-    for (uint32_t i = 0; i < fullList.size(); ++i) {
-        gameInfo *header = fullList[i];
-        if (StringTools::findStringIC(header->name,gameFilter)) {
-            filteredList.push_back(header);
-        }
-    }
-}
-
-int32_t GameList::filterList(const char * filter) {
-    lock();
-    if(filter) {
-        gameFilter = filter;
-    }
-
-    if(fullGameList.size() == 0) {
-        readGameList();
-    }
-
-    filteredList.clear();
-
-    // Filter current game list if selected
-    internalFilterList(fullGameList);
-
-    sortList();
-
-    titleListChanged(this);
-
-    AsyncExecutor::execute([&] { updateTitleInfo();});
-    int32_t res = filteredList.size();
-    unlock();
-    return res;
-}
-
-void GameList::internalLoadUnfiltered(std::vector<gameInfo*> & fullList) {
-    for (uint32_t i = 0; i < fullList.size(); ++i) {
-        gameInfo *header = fullList[i];
-
-        filteredList.push_back(header);
-    }
-}
-
-int32_t GameList::loadUnfiltered() {
+int32_t GameList::load() {
     lock();
     if(fullGameList.size() == 0) {
         readGameList();
     }
 
-    gameFilter.clear();
-    filteredList.clear();
-
-    // Filter current game list if selected
-    internalLoadUnfiltered(fullGameList);
-
-    sortList();
-
     AsyncExecutor::execute([&] { updateTitleInfo();});
 
     titleListChanged(this);
 
-    int res = filteredList.size();
+    int res = fullGameList.size();
     unlock();
     return res;
 }
-
-void GameList::sortList() {
-    lock();
-    std::sort(filteredList.begin(), filteredList.end(), nameSortCallback);
-    unlock();
-}
-
-bool GameList::nameSortCallback(const gameInfo *a, const gameInfo *b) {
-    return (strcasecmp(((gameInfo *) a)->name.c_str(), ((gameInfo *) b)->name.c_str()) < 0);
-}
-
