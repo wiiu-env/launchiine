@@ -168,9 +168,9 @@ bool Application::procUI(void) {
     case PROCUI_STATUS_RELEASE_FOREGROUND: {
         DEBUG_FUNCTION_LINE("PROCUI_STATUS_RELEASE_FOREGROUND\n");
         if(video != NULL) {
-            // we can turn of the screen but we don't need to and it will display the last image
-            video->tvEnable(false);
-            video->drcEnable(false);
+            // we can turn ofF the screen but we don't need to and it will display the last image
+            video->tvEnable(true);
+            video->drcEnable(true);
 
             DEBUG_FUNCTION_LINE("delete fontSystem\n");
             delete fontSystem;
@@ -274,9 +274,19 @@ void Application::executeThread(void) {
         video->waitForVSync();
     }
 
+    if(bgMusic) {
+        bgMusic->SetVolume(0);
+    }
+
     //! in case we exit to a homebrew let's smoothly fade out
     if(video) {
-        fadeOut();
+        uint64_t titleID = OSGetTitleID();
+        if (titleID == HBL_TITLE_ID ||
+                titleID == MII_MAKER_JPN_TITLE_ID ||
+                titleID == MII_MAKER_USA_TITLE_ID ||
+                titleID == MII_MAKER_EUR_TITLE_ID) {
+            fadeOut();
+        }
     }
 
     DEBUG_FUNCTION_LINE("delete mainWindow\n");

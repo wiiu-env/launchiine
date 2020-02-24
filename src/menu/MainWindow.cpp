@@ -26,6 +26,7 @@
 #include <future>
 #include <coreinit/title.h>
 #include "utils/AsyncExecutor.h"
+#include "GameSplashScreen.h"
 
 MainWindow::MainWindow(int32_t w, int32_t h)
     : width(w)
@@ -251,11 +252,11 @@ void MainWindow::SetupMainView() {
 
     if(currentTvFrame != currentDrcFrame) {
         currentTvFrame->gameSelectionChanged.connect(this, &MainWindow::OnGameSelectionChange);
-        currentTvFrame->gameLaunchClicked.connect(this, &MainWindow::OnGameLaunch);
+        currentTvFrame->gameLaunchClicked.connect(this, &MainWindow::OnGameLaunchSplashScreen);
     }
 
     currentDrcFrame->gameSelectionChanged.connect(this, &MainWindow::OnGameSelectionChange);
-    currentDrcFrame->gameLaunchClicked.connect(this, &MainWindow::OnGameLaunch);
+    currentDrcFrame->gameLaunchClicked.connect(this, &MainWindow::OnGameLaunchSplashScreen);
 
     mainSwitchButtonFrame = new MainDrcButtonsFrame(width, height);
     mainSwitchButtonFrame->settingsButtonClicked.connect(this, &MainWindow::OnSettingsButtonClicked);
@@ -338,9 +339,9 @@ void MainWindow::OnLayoutSwitchEffectFinish(GuiElement *element) {
     currentDrcFrame->gameLaunchClicked.disconnect(this);
 
     currentTvFrame->gameSelectionChanged.connect(this, &MainWindow::OnGameSelectionChange);
-    currentTvFrame->gameLaunchClicked.connect(this, &MainWindow::OnGameLaunch);
+    currentTvFrame->gameLaunchClicked.connect(this, &MainWindow::OnGameLaunchSplashScreen);
     currentDrcFrame->gameSelectionChanged.connect(this, &MainWindow::OnGameSelectionChange);
-    currentDrcFrame->gameLaunchClicked.connect(this, &MainWindow::OnGameLaunch);
+    currentDrcFrame->gameLaunchClicked.connect(this, &MainWindow::OnGameLaunchSplashScreen);
 }
 
 void MainWindow::OnOpenEffectFinish(GuiElement *element) {
@@ -377,11 +378,52 @@ void MainWindow::OnGameSelectionChange(GuiTitleBrowser *element, uint64_t select
 
 extern "C" void _SYSLaunchTitleByPathFromLauncher(const char * path, int len, int);
 
-void MainWindow::OnGameLaunch(GuiTitleBrowser *element, uint64_t titleID) {
+void MainWindow::OnGameLaunchSplashScreen(GuiTitleBrowser * element, uint64_t titleID) {
+    gameInfo * info = gameList.getGameInfo(titleID);
+    if(info != NULL) {
+        uint64_t ownTitleId = OSGetTitleID();
+        if (ownTitleId == HBL_TITLE_ID ||
+                ownTitleId == MII_MAKER_JPN_TITLE_ID ||
+                ownTitleId == MII_MAKER_USA_TITLE_ID ||
+                ownTitleId == MII_MAKER_EUR_TITLE_ID) {
+            OnGameLaunch(titleID);
+        } else {
+            GameSplashScreen * gameSettingsDRC = new GameSplashScreen(width,height,info, false);
+            gameSettingsDRC->setEffect(EFFECT_FADE, 15, 255);
+            gameSettingsDRC->setState(GuiElement::STATE_DISABLED);
+            gameSettingsDRC->effectFinished.connect(this, &MainWindow::OnOpenEffectFinish);
+            gameSettingsDRC->gameGameSplashScreenFinished.connect(this, &MainWindow::OnGameLaunchSplashScreenFinished);
+            appendDrc(gameSettingsDRC);
+
+            GameSplashScreen * gameSettingsTV = new GameSplashScreen(width,height,info, true);
+            gameSettingsTV->setEffect(EFFECT_FADE, 15, 255);
+            gameSettingsTV->setState(GuiElement::STATE_DISABLED);
+            gameSettingsTV->effectFinished.connect(this, &MainWindow::OnOpenEffectFinish);
+            gameSettingsTV->gameGameSplashScreenFinished.connect(this, &MainWindow::OnGameLaunchSplashScreenFinished);
+            appendTv(gameSettingsTV);
+        }
+    } else {
+        DEBUG_FUNCTION_LINE("Failed to find gameInfo for titleId %016llX\n", titleID);
+    }
+}
+
+void MainWindow::OnGameLaunchSplashScreenFinished(GuiElement * element, gameInfo * info, bool launchGame) {
+    if(info == NULL) {
+        return;
+    }
+    if(launchGame) {
+        OnGameLaunch(info->titleId);
+    }
+    if(element) {
+        element->setState(GuiElement::STATE_DISABLED);
+        element->setEffect(EFFECT_FADE, 15, 255);
+        element->effectFinished.connect(this, &MainWindow::OnCloseEffectFinish);
+    }
+}
+void MainWindow::OnGameLaunch(uint64_t titleID) {
     gameInfo * info = gameList.getGameInfo(titleID);
     if(info != NULL) {
         uint64_t titleID = OSGetTitleID();
-
         if (titleID == HBL_TITLE_ID ||
                 titleID == MII_MAKER_JPN_TITLE_ID ||
                 titleID == MII_MAKER_USA_TITLE_ID ||
@@ -391,5 +433,7 @@ void MainWindow::OnGameLaunch(GuiTitleBrowser *element, uint64_t titleID) {
             const char* path = info->gamePath.c_str();
             _SYSLaunchTitleByPathFromLauncher(path, strlen(path),0);
         }
+    } else {
+        DEBUG_FUNCTION_LINE("Failed to find gameInfo for titleId %016llX\n", titleID);
     }
 }

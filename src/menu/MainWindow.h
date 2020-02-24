@@ -117,8 +117,11 @@ private:
     void OnOpenEffectFinish(GuiElement *element);
     void OnCloseEffectFinish(GuiElement *element);
 
-    void OnGameLaunch(GuiTitleBrowser *element, uint64_t gameIdx);
-    void OnGameSelectionChange(GuiTitleBrowser *element, uint64_t selectedIdx);
+    void OnGameLaunch(uint64_t titleId);
+    void OnGameLaunchSplashScreenFinished(GuiElement * element, gameInfo * info, bool launchGame);
+    void OnGameLaunchSplashScreen(GuiTitleBrowser *element, uint64_t titleId);
+
+    void OnGameSelectionChange(GuiTitleBrowser *element, uint64_t titleId);
 
     void OnSettingsButtonClicked(GuiElement *element);
     void OnLayoutSwitchClicked(GuiElement *element);
