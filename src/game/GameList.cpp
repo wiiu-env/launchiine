@@ -3,6 +3,7 @@
 #include <string.h>
 #include <coreinit/mcp.h>
 #include <nn/acp/nn_acp_types.h>
+#include <nn/acp/title.h>
 #include <coreinit/cache.h>
 
 #include "utils/AsyncExecutor.h"
@@ -52,7 +53,6 @@ gameInfo * GameList::getGameInfo(uint64_t titleId){
     return result;
 }
 
-extern "C" int ACPGetTitleMetaXml(uint64_t titleid, ACPMetaXml*);
 int32_t GameList::readGameList() {
     // Clear list
     for (auto const& x : fullGameList) {
