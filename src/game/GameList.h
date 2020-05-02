@@ -11,6 +11,7 @@
 
 typedef struct _gameInfo {
     uint64_t titleId;
+    MCPAppType appType;
     std::string name;
     std::string gamePath;
     GuiImageData * imageData;

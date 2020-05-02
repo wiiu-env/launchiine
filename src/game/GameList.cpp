@@ -77,30 +77,47 @@ int32_t GameList::readGameList() {
     }
 
     std::vector<struct MCPTitleListType> titles(titleCount);
-    uint32_t realTitleCount;
+    uint32_t realTitleCount = 0;
 
-    MCPError err = MCP_TitleList(mcp, &realTitleCount, titles.data(), titles.size() * sizeof(decltype(titles)::value_type));
-    if (err < 0) {
-        MCP_Close(mcp);
-        return 0;
+    static const std::vector<MCPAppType> menuAppTypes {
+        MCP_APP_TYPE_GAME,
+        MCP_APP_TYPE_GAME_WII,
+        MCP_APP_TYPE_SYSTEM_APPS,
+        MCP_APP_TYPE_SYSTEM_SETTINGS,
+        MCP_APP_TYPE_FRIEND_LIST,
+        MCP_APP_TYPE_MIIVERSE,
+        MCP_APP_TYPE_ESHOP,
+        MCP_APP_TYPE_BROWSER,
+        MCP_APP_TYPE_DOWNLOAD_MANAGEMENT,
+        MCP_APP_TYPE_ACCOUNT_APPS,
+    };
+
+    for (auto appType : menuAppTypes) {
+        uint32_t titleCountByType = 0;
+        MCPError err = MCP_TitleListByAppType(mcp, appType, &titleCountByType, titles.data() + realTitleCount,
+                                     (titles.size() - realTitleCount) * sizeof(decltype(titles)::value_type));
+        if (err < 0) {
+            MCP_Close(mcp);
+            return 0;
+        }
+        realTitleCount += titleCountByType;
     }
     if (realTitleCount != titles.size()) {
         titles.resize(realTitleCount);
     }
 
     for (auto title_candidate : titles) {
-        if(true || (title_candidate.titleId & 0xFFFFFFFF00000000L) == 0x0005000000000000L) {
-            gameInfo* newGameInfo = new gameInfo;
-            newGameInfo->titleId = title_candidate.titleId;
-            newGameInfo->gamePath = title_candidate.path;
-            newGameInfo->name = "<unknown>";
-            newGameInfo->imageData = NULL;
-            DCFlushRange(newGameInfo, sizeof(gameInfo));
+        gameInfo* newGameInfo = new gameInfo;
+        newGameInfo->titleId = title_candidate.titleId;
+        newGameInfo->appType = title_candidate.appType;
+        newGameInfo->gamePath = title_candidate.path;
+        newGameInfo->name = "<unknown>";
+        newGameInfo->imageData = NULL;
+        DCFlushRange(newGameInfo, sizeof(gameInfo));
 
-            fullGameList.push_back(newGameInfo);
-            titleAdded(newGameInfo);
-            cnt++;
-        }
+        fullGameList.push_back(newGameInfo);
+        titleAdded(newGameInfo);
+        cnt++;
     }
 
     AsyncExecutor::execute([this] {
