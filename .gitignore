@@ -5,3 +5,6 @@ build/
 src/resources/filelist.h
 *.save-failed
 launchiine.layout
+cmake-build-debug/
+.idea/
+CMakeLists.txt
