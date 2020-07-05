@@ -1,5 +1,6 @@
 #include <malloc.h>
 #include <string.h>
+#include <string>
 #include "Resources.h"
 #include "filelist.h"
 #include <gui/GuiSound.h>
@@ -11,6 +12,7 @@
 #include <future>
 #include <iostream>
 #include <thread>
+#include <strings.h>
 
 
 Resources * Resources::instance = NULL;

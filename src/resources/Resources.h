@@ -1,5 +1,4 @@
-#ifndef RECOURCES_H_
-#define RECOURCES_H_
+#pragma once
 
 #include <map>
 #include <stdint.h>
@@ -29,5 +28,3 @@ private:
     std::map<std::string, std::pair<uint32_t, GuiImageData *> > imageDataMap;
     std::map<std::string, std::pair<uint32_t, GuiSound *> > soundDataMap;
 };
-
-#endif

@@ -32,7 +32,7 @@ then
 echo "Generating filelist.h for $count files." >&2
 cat <<EOF > $outFile
 /****************************************************************************
- * Loadiine resource files.
+ * Resource files.
  * This file is generated automatically.
  * Includes $count files.
  *
@@ -57,11 +57,10 @@ for i in ${files[@]}
 do
 	filename=${i%.*}
 	extension=${i##*.}
-	echo 'extern const unsigned char '$filename'_'$extension'[];' >> $outFile
-	echo 'extern const unsigned int '$filename'_'$extension'_size;' >> $outFile
-	echo '' >> $outFile
+	echo '#include "'$filename'_'$extension'.h"' >> $outFile
 done
 
+echo '' >> $outFile
 echo 'static RecourceFile RecourceList[] =' >> $outFile
 echo '{' >> $outFile
 
