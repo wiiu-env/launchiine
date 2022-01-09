@@ -128,7 +128,7 @@ private:
 
     void OnCloseEffectFinish(GuiElement *element);
 
-    void OnGameLaunch(uint64_t titleId);
+    static void OnGameLaunch(uint64_t titleId);
 
     void OnGameLaunchSplashScreenFinished(GuiElement *element, gameInfo *info, bool launchGame);
 

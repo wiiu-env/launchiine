@@ -45,21 +45,21 @@ GameSplashScreen::GameSplashScreen(int32_t w, int32_t h, gameInfo *info, bool on
 }
 
 void GameSplashScreen::OnSplashScreenFadeInDone(GuiElement *element) {
-    // we need to wait one more frame becaus the effects get calculated before drawing.
+    // we need to wait one more frame because the effects get calculated before drawing.
     launchGame = true;
-
 }
 
 void GameSplashScreen::draw(CVideo *v) {
     GuiFrame::draw(v);
+    bool triggerLaunch = onTV; // Only the trigger the launch when calling for the TV.
     if (launchGame && frameCounter++ > 1) {
-        DEBUG_FUNCTION_LINE("Launch game %d\n", onTV);
-        gameGameSplashScreenFinished(this, info, onTV);
+        launchGame = false;
+        gameGameSplashScreenFinished(this, info, triggerLaunch);
     }
 }
 
 GameSplashScreen::~GameSplashScreen() {
-    DEBUG_FUNCTION_LINE("Destroy me\n");
+    DEBUG_FUNCTION_LINE("Destroy me");
     if (splashScreenData) {
         AsyncExecutor::pushForDelete(splashScreenData);
     }

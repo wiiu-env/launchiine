@@ -25,6 +25,7 @@
 #include <sysapp/launch.h>
 #include <future>
 #include <coreinit/title.h>
+#include <nn/acp/title.h>
 #include "utils/AsyncExecutor.h"
 #include "GameSplashScreen.h"
 
@@ -346,6 +347,7 @@ void MainWindow::OnOpenEffectFinish(GuiElement *element) {
 }
 
 void MainWindow::OnCloseEffectFinish(GuiElement *element) {
+    DEBUG_FUNCTION_LINE("Remove %08X", element);
     //! remove element from draw list and push to delete queue
     remove(element);
     AsyncExecutor::pushForDelete(element);
@@ -366,39 +368,25 @@ void MainWindow::OnGameSelectionChange(GuiTitleBrowser *element, uint64_t select
     }
 }
 
-#define HBL_TITLE_ID (0x0005000013374842)
-#define MII_MAKER_JPN_TITLE_ID (0x000500101004A000)
-#define MII_MAKER_USA_TITLE_ID (0x000500101004A100)
-#define MII_MAKER_EUR_TITLE_ID (0x000500101004A200)
-
-extern "C" void _SYSLaunchTitleByPathFromLauncher(const char *path, int len, int);
-
 void MainWindow::OnGameLaunchSplashScreen(GuiTitleBrowser *element, uint64_t titleID) {
+    DEBUG_FUNCTION_LINE("");
     gameInfo *info = gameList.getGameInfo(titleID);
     if (info != nullptr) {
-        uint64_t ownTitleId = OSGetTitleID();
-        if (ownTitleId == HBL_TITLE_ID ||
-            ownTitleId == MII_MAKER_JPN_TITLE_ID ||
-            ownTitleId == MII_MAKER_USA_TITLE_ID ||
-            ownTitleId == MII_MAKER_EUR_TITLE_ID) {
-            OnGameLaunch(titleID);
-        } else {
-            GameSplashScreen *gameSettingsDRC = new GameSplashScreen(width, height, info, false);
-            gameSettingsDRC->setEffect(EFFECT_FADE, 15, 255);
-            gameSettingsDRC->setState(GuiElement::STATE_DISABLED);
-            gameSettingsDRC->effectFinished.connect(this, &MainWindow::OnOpenEffectFinish);
-            gameSettingsDRC->gameGameSplashScreenFinished.connect(this, &MainWindow::OnGameLaunchSplashScreenFinished);
-            appendDrc(gameSettingsDRC);
+        auto *splashScreenDRC = new GameSplashScreen(width, height, info, false);
+        splashScreenDRC->setEffect(EFFECT_FADE, 15, 255);
+        splashScreenDRC->setState(GuiElement::STATE_DISABLED);
+        splashScreenDRC->effectFinished.connect(this, &MainWindow::OnOpenEffectFinish);
+        splashScreenDRC->gameGameSplashScreenFinished.connect(this, &MainWindow::OnGameLaunchSplashScreenFinished);
+        appendDrc(splashScreenDRC);
 
-            GameSplashScreen *gameSettingsTV = new GameSplashScreen(width, height, info, true);
-            gameSettingsTV->setEffect(EFFECT_FADE, 15, 255);
-            gameSettingsTV->setState(GuiElement::STATE_DISABLED);
-            gameSettingsTV->effectFinished.connect(this, &MainWindow::OnOpenEffectFinish);
-            gameSettingsTV->gameGameSplashScreenFinished.connect(this, &MainWindow::OnGameLaunchSplashScreenFinished);
-            appendTv(gameSettingsTV);
-        }
+        auto *splashScreenTV = new GameSplashScreen(width, height, info, true);
+        splashScreenTV->setEffect(EFFECT_FADE, 15, 255);
+        splashScreenTV->setState(GuiElement::STATE_DISABLED);
+        splashScreenTV->effectFinished.connect(this, &MainWindow::OnOpenEffectFinish);
+        splashScreenTV->gameGameSplashScreenFinished.connect(this, &MainWindow::OnGameLaunchSplashScreenFinished);
+        appendTv(splashScreenTV);
     } else {
-        DEBUG_FUNCTION_LINE("Failed to find gameInfo for titleId %016llX\n", titleID);
+        DEBUG_FUNCTION_LINE("Failed to find gameInfo for titleId %016llX", titleID);
     }
 }
 
@@ -410,26 +398,78 @@ void MainWindow::OnGameLaunchSplashScreenFinished(GuiElement *element, gameInfo 
         OnGameLaunch(info->titleId);
     }
     if (element) {
-        element->setState(GuiElement::STATE_DISABLED);
-        element->setEffect(EFFECT_FADE, 15, 255);
-        element->effectFinished.connect(this, &MainWindow::OnCloseEffectFinish);
+        // immediately remove the splashScreen
+        MainWindow::OnCloseEffectFinish(element);
     }
 }
 
-void MainWindow::OnGameLaunch(uint64_t titleID) {
-    gameInfo *info = gameList.getGameInfo(titleID);
-    if (info != nullptr) {
-        uint64_t titleID = OSGetTitleID();
-        if (titleID == HBL_TITLE_ID ||
-            titleID == MII_MAKER_JPN_TITLE_ID ||
-            titleID == MII_MAKER_USA_TITLE_ID ||
-            titleID == MII_MAKER_EUR_TITLE_ID) {
-            SYSLaunchTitle(info->titleId);
-        } else {
-            const char *path = info->gamePath.c_str();
-            _SYSLaunchTitleByPathFromLauncher(path, strlen(path), 0);
-        }
-    } else {
-        DEBUG_FUNCTION_LINE("Failed to find gameInfo for titleId %016llX\n", titleID);
+extern "C" int32_t SYSSwitchToBrowser(void *);
+extern "C" int32_t SYSSwitchToEShop(void *);
+extern "C" int32_t _SYSSwitchTo(uint32_t pfid);
+
+void MainWindow::OnGameLaunch(uint64_t titleId) {
+    DEBUG_FUNCTION_LINE("Launch GAME!!");
+
+    if (titleId == 0x0005001010040000L ||
+        titleId == 0x0005001010040100L ||
+        titleId == 0x0005001010040200L) {
+        DEBUG_FUNCTION_LINE("Skip launching the Wii U Menu");
+        return;
     }
+
+    if (titleId == 0x000500301001220AL ||
+        titleId == 0x000500301001210AL ||
+        titleId == 0x000500301001200AL) {
+        DEBUG_FUNCTION_LINE("Launching the browser");
+        SYSSwitchToBrowser(nullptr);
+        return;
+    }
+    if (titleId == 0x000500301001400AL ||
+        titleId == 0x000500301001410AL ||
+        titleId == 0x000500301001420AL) {
+        DEBUG_FUNCTION_LINE("Launching the Eshop");
+        SYSSwitchToEShop(nullptr);
+
+        return;
+    }
+    if (titleId == 0x000500301001800AL ||
+        titleId == 0x000500301001810AL ||
+        titleId == 0x000500301001820AL) {
+        DEBUG_FUNCTION_LINE("Launching the Download Management");
+        _SYSSwitchTo(12);
+        return;
+    }
+    if (titleId == 0x000500301001600AL ||
+        titleId == 0x000500301001610AL ||
+        titleId == 0x000500301001620AL) {
+        DEBUG_FUNCTION_LINE("Launching Miiverse");
+        _SYSSwitchTo(9);
+        return;
+    }
+    if (titleId == 0x000500301001500AL ||
+        titleId == 0x000500301001510AL ||
+        titleId == 0x000500301001520AL) {
+        DEBUG_FUNCTION_LINE("Launching Friendlist");
+        _SYSSwitchTo(11);
+        return;
+    }
+    if (titleId == 0x000500301001300AL ||
+        titleId == 0x000500301001310AL ||
+        titleId == 0x000500301001320AL) {
+        DEBUG_FUNCTION_LINE("Launching TVii");
+        _SYSSwitchTo(3);
+        return;
+    }
+
+    MCPTitleListType titleInfo;
+    int32_t handle = MCP_Open();
+    auto err = MCP_GetTitleInfo(handle, titleId, &titleInfo);
+    MCP_Close(handle);
+    if (err == 0) {
+        ACPAssignTitlePatch(&titleInfo);
+        _SYSLaunchTitleWithStdArgsInNoSplash(titleId, nullptr);
+        return;
+    }
+
+    DEBUG_FUNCTION_LINE("Failed launch titleId %016llX", titleId);
 }
