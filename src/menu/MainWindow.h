@@ -30,17 +30,19 @@ class CVideo;
 class MainWindow : public sigslot::has_slots<> {
 public:
     MainWindow(int32_t w, int32_t h);
+
     virtual ~MainWindow();
 
     void appendTv(GuiElement *e) {
-        if(!e)
+        if (!e)
             return;
 
         removeTv(e);
         tvElements.push_back(e);
     }
+
     void appendDrc(GuiElement *e) {
-        if(!e)
+        if (!e)
             return;
 
         removeDrc(e);
@@ -53,14 +55,15 @@ public:
     }
 
     void insertTv(uint32_t pos, GuiElement *e) {
-        if(!e)
+        if (!e)
             return;
 
         removeTv(e);
         tvElements.insert(tvElements.begin() + pos, e);
     }
+
     void insertDrc(uint32_t pos, GuiElement *e) {
-        if(!e)
+        if (!e)
             return;
 
         removeDrc(e);
@@ -73,16 +76,17 @@ public:
     }
 
     void removeTv(GuiElement *e) {
-        for(uint32_t i = 0; i < tvElements.size(); ++i) {
-            if(e == tvElements[i]) {
+        for (uint32_t i = 0; i < tvElements.size(); ++i) {
+            if (e == tvElements[i]) {
                 tvElements.erase(tvElements.begin() + i);
                 break;
             }
         }
     }
+
     void removeDrc(GuiElement *e) {
-        for(uint32_t i = 0; i < drcElements.size(); ++i) {
-            if(e == drcElements[i]) {
+        for (uint32_t i = 0; i < drcElements.size(); ++i) {
+            if (e == drcElements[i]) {
                 drcElements.erase(drcElements.begin() + i);
                 break;
             }
@@ -93,20 +97,26 @@ public:
         removeTv(e);
         removeDrc(e);
     }
+
     void removeAll() {
         tvElements.clear();
         drcElements.clear();
     }
 
     void drawDrc(CVideo *video);
+
     void drawTv(CVideo *video);
+
     void update(GuiController *controller);
+
     void updateEffects();
+
     void process();
 
     void lockGUI() {
         guiMutex.lock();
     }
+
     void unlockGUI() {
         guiMutex.unlock();
     }
@@ -115,22 +125,30 @@ private:
     void SetupMainView(void);
 
     void OnOpenEffectFinish(GuiElement *element);
+
     void OnCloseEffectFinish(GuiElement *element);
 
     void OnGameLaunch(uint64_t titleId);
-    void OnGameLaunchSplashScreenFinished(GuiElement * element, gameInfo * info, bool launchGame);
+
+    void OnGameLaunchSplashScreenFinished(GuiElement *element, gameInfo *info, bool launchGame);
+
     void OnGameLaunchSplashScreen(GuiTitleBrowser *element, uint64_t titleId);
 
     void OnGameSelectionChange(GuiTitleBrowser *element, uint64_t titleId);
 
     void OnSettingsButtonClicked(GuiElement *element);
+
     void OnLayoutSwitchClicked(GuiElement *element);
+
     void OnLayoutSwitchEffectFinish(GuiElement *element);
+
     void OnGameListFilterButtonClicked(GuiElement *element);
 
-    void OnGameTitleListChanged(GameList * list);
-    void OnGameTitleUpdated(gameInfo * info);
-    void OnGameTitleAdded(gameInfo * info);
+    void OnGameTitleListChanged(GameList *list);
+
+    void OnGameTitleUpdated(gameInfo *info);
+
+    void OnGameTitleAdded(gameInfo *info);
 
     int32_t width, height;
     std::vector<GuiElement *> drcElements;
@@ -140,8 +158,8 @@ private:
 
     MainDrcButtonsFrame *mainSwitchButtonFrame;
 
-    GuiTitleBrowser * currentTvFrame;
-    GuiTitleBrowser * currentDrcFrame;
+    GuiTitleBrowser *currentTvFrame;
+    GuiTitleBrowser *currentDrcFrame;
 
     GuiImageData *pointerImgData[4];
     GuiImage *pointerImg[4];
@@ -150,7 +168,7 @@ private:
     GameList gameList;
 
     std::recursive_mutex guiMutex;
-    KeyboardHelper * keyboardInstance = NULL;
+    KeyboardHelper *keyboardInstance = nullptr;
 };
 
 #endif //_MAIN_WINDOW_H_

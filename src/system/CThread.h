@@ -26,9 +26,9 @@ public:
     typedef void (* Callback)(CThread *thread, void *arg);
 
     //! constructor
-    CThread(int32_t iAttr, int32_t iPriority = 16, int32_t iStackSize = 0x8000, CThread::Callback callback = NULL, void *callbackArg = NULL)
-        : pThread(NULL)
-        , pThreadStack(NULL)
+    CThread(int32_t iAttr, int32_t iPriority = 16, int32_t iStackSize = 0x8000, CThread::Callback callback = nullptr, void *callbackArg = nullptr)
+        : pThread(nullptr)
+        , pThreadStack(nullptr)
         , pCallback(callback)
         , pCallbackArg(callbackArg) {
         //! save attribute assignment
@@ -102,7 +102,7 @@ public:
             if(isThreadSuspended())
                 resumeThread();
 
-            OSJoinThread(pThread, NULL);
+            OSJoinThread(pThread, nullptr);
         }
         //! free the thread stack buffer
         if(pThreadStack)
@@ -110,8 +110,8 @@ public:
         if(pThread)
             free(pThread);
 
-        pThread = NULL;
-        pThreadStack = NULL;
+        pThread = nullptr;
+        pThreadStack = nullptr;
     }
     //! Thread attributes
     enum eCThreadAttributes {

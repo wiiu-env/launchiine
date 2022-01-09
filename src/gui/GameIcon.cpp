@@ -11,7 +11,7 @@ static const float cfIconMirrorScale = 1.15f;
 static const float cfIconMirrorAlpha = 0.45f;
 
 GameIcon::GameIcon(GuiImageData *preloadImage)
-    : GuiImage(preloadImage) {
+        : GuiImage(preloadImage) {
     bSelected = false;
     bRenderStroke = true;
     bRenderReflection = false;
@@ -36,46 +36,46 @@ GameIcon::GameIcon(GuiImageData *preloadImage)
     vtxCount = sizeof(cfGameIconPosVtxs) / (Shader3D::cuVertexAttrSize);
 
     //! texture and vertex coordinates
-    posVtxs = (float*)memalign(GX2_VERTEX_BUFFER_ALIGNMENT, sizeof(cfGameIconPosVtxs));
-    texCoords = (float*)memalign(GX2_VERTEX_BUFFER_ALIGNMENT, sizeof(cfGameIconTexCoords));
+    posVtxs = (float *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, sizeof(cfGameIconPosVtxs));
+    texCoords = (float *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, sizeof(cfGameIconTexCoords));
 
-    if(posVtxs) {
-        memcpy((float*)posVtxs, cfGameIconPosVtxs, sizeof(cfGameIconPosVtxs));
-        GX2Invalidate(GX2_INVALIDATE_MODE_CPU_ATTRIBUTE_BUFFER, (float*)posVtxs, sizeof(cfGameIconPosVtxs));
+    if (posVtxs) {
+        memcpy((float *) posVtxs, cfGameIconPosVtxs, sizeof(cfGameIconPosVtxs));
+        GX2Invalidate(GX2_INVALIDATE_MODE_CPU_ATTRIBUTE_BUFFER, (float *) posVtxs, sizeof(cfGameIconPosVtxs));
     }
-    if(texCoords) {
-        memcpy((float*)texCoords, cfGameIconTexCoords, sizeof(cfGameIconTexCoords));
-        GX2Invalidate(GX2_INVALIDATE_MODE_CPU_ATTRIBUTE_BUFFER, (float*)texCoords, sizeof(cfGameIconTexCoords));
+    if (texCoords) {
+        memcpy((float *) texCoords, cfGameIconTexCoords, sizeof(cfGameIconTexCoords));
+        GX2Invalidate(GX2_INVALIDATE_MODE_CPU_ATTRIBUTE_BUFFER, (float *) texCoords, sizeof(cfGameIconTexCoords));
     }
 
     //! create vertexes for the mirror frame
-    texCoordsMirror = (float*)memalign(GX2_VERTEX_BUFFER_ALIGNMENT, sizeof(cfGameIconTexCoords));
+    texCoordsMirror = (float *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, sizeof(cfGameIconTexCoords));
 
-    if(texCoordsMirror) {
-        for(uint32_t i = 0; i < vtxCount; i++) {
-            texCoordsMirror[i*2 + 0] = texCoords[i*2 + 0] * cfIconMirrorScale - ((cfIconMirrorScale - 1.0f) - (cfIconMirrorScale - 1.0f) * 0.5f);
-            texCoordsMirror[i*2 + 1] = texCoords[i*2 + 1] * cfIconMirrorScale - ((cfIconMirrorScale - 1.0f) - (cfIconMirrorScale - 1.0f) * 0.5f);
+    if (texCoordsMirror) {
+        for (uint32_t i = 0; i < vtxCount; i++) {
+            texCoordsMirror[i * 2 + 0] = texCoords[i * 2 + 0] * cfIconMirrorScale - ((cfIconMirrorScale - 1.0f) - (cfIconMirrorScale - 1.0f) * 0.5f);
+            texCoordsMirror[i * 2 + 1] = texCoords[i * 2 + 1] * cfIconMirrorScale - ((cfIconMirrorScale - 1.0f) - (cfIconMirrorScale - 1.0f) * 0.5f);
         }
         GX2Invalidate(GX2_INVALIDATE_MODE_CPU_ATTRIBUTE_BUFFER, texCoordsMirror, sizeof(cfGameIconTexCoords));
     }
 
     //! setup stroke of the icon
-    strokePosVtxs = (float*)memalign(GX2_VERTEX_BUFFER_ALIGNMENT, sizeof(cfGameIconStrokeVtxs));
-    if(strokePosVtxs) {
+    strokePosVtxs = (float *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, sizeof(cfGameIconStrokeVtxs));
+    if (strokePosVtxs) {
         memcpy(strokePosVtxs, cfGameIconStrokeVtxs, sizeof(cfGameIconStrokeVtxs));
         GX2Invalidate(GX2_INVALIDATE_MODE_CPU_ATTRIBUTE_BUFFER, strokePosVtxs, sizeof(cfGameIconStrokeVtxs));
     }
-    strokeTexCoords = (float*)memalign(GX2_VERTEX_BUFFER_ALIGNMENT, cuGameIconStrokeVtxCount * Shader::cuTexCoordAttrSize);
-    if(strokeTexCoords) {
-        for(size_t i = 0, n = 0; i < cuGameIconStrokeVtxCount; n += 2, i += 3) {
+    strokeTexCoords = (float *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, cuGameIconStrokeVtxCount * Shader::cuTexCoordAttrSize);
+    if (strokeTexCoords) {
+        for (size_t i = 0, n = 0; i < cuGameIconStrokeVtxCount; n += 2, i += 3) {
             strokeTexCoords[n] = (1.0f + strokePosVtxs[i]) * 0.5f;
-            strokeTexCoords[n+1] = 1.0f - (1.0f + strokePosVtxs[i+1]) * 0.5f;
+            strokeTexCoords[n + 1] = 1.0f - (1.0f + strokePosVtxs[i + 1]) * 0.5f;
         }
         GX2Invalidate(GX2_INVALIDATE_MODE_CPU_ATTRIBUTE_BUFFER, strokeTexCoords, cuGameIconStrokeVtxCount * Shader::cuTexCoordAttrSize);
     }
-    strokeColorVtxs = (uint8_t*)memalign(GX2_VERTEX_BUFFER_ALIGNMENT, cuGameIconStrokeVtxCount * Shader::cuColorAttrSize);
-    if(strokeColorVtxs) {
-        for(size_t i = 0; i < (cuGameIconStrokeVtxCount * Shader::cuColorAttrSize); i++)
+    strokeColorVtxs = (uint8_t *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, cuGameIconStrokeVtxCount * Shader::cuColorAttrSize);
+    if (strokeColorVtxs) {
+        for (size_t i = 0; i < (cuGameIconStrokeVtxCount * Shader::cuColorAttrSize); i++)
             strokeColorVtxs[i] = 0xff;
         GX2Invalidate(GX2_INVALIDATE_MODE_CPU_ATTRIBUTE_BUFFER, strokeColorVtxs, cuGameIconStrokeVtxCount * Shader::cuColorAttrSize);
     }
@@ -83,47 +83,47 @@ GameIcon::GameIcon(GuiImageData *preloadImage)
 
 GameIcon::~GameIcon() {
     //! remove image so it can not be drawn anymore from this point on
-    imageData = NULL;
+    imageData = nullptr;
 
     //! main image vertexes
-    if(posVtxs) {
-        free((void*)posVtxs);
-        posVtxs = NULL;
+    if (posVtxs) {
+        free((void *) posVtxs);
+        posVtxs = nullptr;
     }
-    if(texCoords) {
-        free((void*)texCoords);
-        texCoords = NULL;
+    if (texCoords) {
+        free((void *) texCoords);
+        texCoords = nullptr;
     }
     //! mirror image vertexes
-    if(texCoordsMirror) {
+    if (texCoordsMirror) {
         free(texCoordsMirror);
-        texCoordsMirror = NULL;
+        texCoordsMirror = nullptr;
     }
     //! stroke image vertexes
-    if(strokePosVtxs) {
+    if (strokePosVtxs) {
         free(strokePosVtxs);
-        strokePosVtxs = NULL;
+        strokePosVtxs = nullptr;
     }
-    if(strokeTexCoords) {
+    if (strokeTexCoords) {
         free(strokeTexCoords);
-        strokeTexCoords = NULL;
+        strokeTexCoords = nullptr;
     }
-    if(strokeColorVtxs) {
+    if (strokeColorVtxs) {
         free(strokeColorVtxs);
-        strokeColorVtxs = NULL;
+        strokeColorVtxs = nullptr;
     }
 }
 
-bool GameIcon::checkRayIntersection(const glm::vec3 & rayOrigin, const glm::vec3 & rayDirFrac) {
+bool GameIcon::checkRayIntersection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirFrac) {
     //! since we always face the camera we can just check the AABB intersection
     //! otherwise an OOB intersection would be required
 
     float currPosX = getCenterX() * Application::instance()->getVideo()->getWidthScaleFactor() * 2.0f;
     float currPosY = getCenterY() * Application::instance()->getVideo()->getHeightScaleFactor() * 2.0f;
     float currPosZ = getDepth() * Application::instance()->getVideo()->getDepthScaleFactor() * 2.0f;
-    float currScaleX = getScaleX() * (float)getWidth() * Application::instance()->getVideo()->getWidthScaleFactor();
-    float currScaleY = getScaleY() * (float)getHeight() * Application::instance()->getVideo()->getHeightScaleFactor();
-    float currScaleZ = getScaleZ() * (float)getWidth() * Application::instance()->getVideo()->getDepthScaleFactor();
+    float currScaleX = getScaleX() * (float) getWidth() * Application::instance()->getVideo()->getWidthScaleFactor();
+    float currScaleY = getScaleY() * (float) getHeight() * Application::instance()->getVideo()->getHeightScaleFactor();
+    float currScaleZ = getScaleZ() * (float) getWidth() * Application::instance()->getVideo()->getDepthScaleFactor();
     //! lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
     glm::vec3 lb(currPosX - currScaleX, currPosY - currScaleY, currPosZ - currScaleZ);
     glm::vec3 rt(currPosX + currScaleX, currPosY + currScaleY, currPosZ + currScaleZ);
@@ -154,29 +154,29 @@ bool GameIcon::checkRayIntersection(const glm::vec3 & rayOrigin, const glm::vec3
     return true;
 }
 
-void GameIcon::draw(CVideo *pVideo, const glm::mat4 & projectionMtx, const glm::mat4 & viewMtx, const glm::mat4 & modelView) {
-    if(imageData == NULL){
+void GameIcon::draw(CVideo *pVideo, const glm::mat4 &projectionMtx, const glm::mat4 &viewMtx, const glm::mat4 &modelView) {
+    if (imageData == nullptr) {
         return;
     }
     //! first setup 2D GUI positions
     float currPosX = getCenterX() * pVideo->getWidthScaleFactor() * 2.0f;
     float currPosY = getCenterY() * pVideo->getHeightScaleFactor() * 2.0f;
     float currPosZ = getDepth() * pVideo->getDepthScaleFactor() * 2.0f;
-    float currScaleX = getScaleX() * (float)getWidth() * pVideo->getWidthScaleFactor();
-    float currScaleY = getScaleY() * (float)getHeight() * pVideo->getHeightScaleFactor();
-    float currScaleZ = getScaleZ() * (float)getWidth() * pVideo->getDepthScaleFactor();
+    float currScaleX = getScaleX() * (float) getWidth() * pVideo->getWidthScaleFactor();
+    float currScaleY = getScaleY() * (float) getHeight() * pVideo->getHeightScaleFactor();
+    float currScaleZ = getScaleZ() * (float) getWidth() * pVideo->getDepthScaleFactor();
     float strokeScaleX = pVideo->getWidthScaleFactor() * strokeWidth * 0.25f + cfIconMirrorScale;
     float strokeScaleY = pVideo->getHeightScaleFactor() * strokeWidth * 0.25f + cfIconMirrorScale;
 
-    for(int32_t iDraw = 0; iDraw < 2; iDraw++) {
-        glm::vec4 * alphaFadeOut;
+    for (int32_t iDraw = 0; iDraw < 2; iDraw++) {
+        glm::vec4 *alphaFadeOut;
         glm::mat4 m_iconView;
         glm::mat4 m_mirrorView;
         glm::mat4 m_strokeView;
 
-        if(iDraw == RENDER_REFLECTION) {
+        if (iDraw == RENDER_REFLECTION) {
             //! Reflection render
-            if(!bRenderReflection)
+            if (!bRenderReflection)
                 continue;
             m_iconView = glm::translate(modelView, glm::vec3(currPosX, -currScaleY * 2.0f - currPosY, currPosZ + cosf(DegToRad(rotationX)) * currScaleZ * 2.0f));
             m_iconView = glm::rotate(m_iconView, DegToRad(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -190,7 +190,7 @@ void GameIcon::draw(CVideo *pVideo, const glm::mat4 & projectionMtx, const glm::
             GX2SetCullOnlyControl(GX2_FRONT_FACE_CCW, GX2_ENABLE, GX2_DISABLE);
         } else {
             //! Normal render
-            m_iconView = glm::translate(modelView, glm::vec3(currPosX,currPosY, currPosZ));
+            m_iconView = glm::translate(modelView, glm::vec3(currPosX, currPosY, currPosZ));
             m_iconView = glm::rotate(m_iconView, DegToRad(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
             m_iconView = glm::scale(m_iconView, glm::vec3(currScaleX, currScaleY, currScaleZ));
 
@@ -204,7 +204,7 @@ void GameIcon::draw(CVideo *pVideo, const glm::mat4 & projectionMtx, const glm::
 
         colorIntensityMirror[3] = cfIconMirrorAlpha * colorIntensity[3];
 
-        if(!bIconLast) {
+        if (!bIconLast) {
             Shader3D::instance()->setShaders();
             Shader3D::instance()->setProjectionMtx(projectionMtx);
             Shader3D::instance()->setViewMtx(viewMtx);
@@ -220,7 +220,7 @@ void GameIcon::draw(CVideo *pVideo, const glm::mat4 & projectionMtx, const glm::
         }
 
 
-        if(bSelected) {
+        if (bSelected) {
             strokeFractalEnable = 0;
 
             GX2SetDepthOnlyControl(GX2_ENABLE, GX2_DISABLE, GX2_COMPARE_FUNC_LEQUAL);
@@ -243,7 +243,7 @@ void GameIcon::draw(CVideo *pVideo, const glm::mat4 & projectionMtx, const glm::
             GX2SetDepthOnlyControl(GX2_ENABLE, GX2_ENABLE, GX2_COMPARE_FUNC_LEQUAL);
         }
 
-        if(iDraw == RENDER_NORMAL && bRenderStroke) {
+        if (iDraw == RENDER_NORMAL && bRenderStroke) {
             strokeFractalEnable = 1;
             //! now render the icon stroke
             //! make the stroke a little bigger than the mirror, just by the line width on each side
@@ -274,7 +274,7 @@ void GameIcon::draw(CVideo *pVideo, const glm::mat4 & projectionMtx, const glm::
         Shader3D::instance()->setAttributeBuffer(vtxCount, posVtxs, texCoordsMirror);
         Shader3D::instance()->draw(GX2_PRIMITIVE_MODE_QUADS, vtxCount);
 
-        if(bIconLast) {
+        if (bIconLast) {
             Shader3D::instance()->setShaders();
             Shader3D::instance()->setProjectionMtx(projectionMtx);
             Shader3D::instance()->setViewMtx(viewMtx);
@@ -290,7 +290,7 @@ void GameIcon::draw(CVideo *pVideo, const glm::mat4 & projectionMtx, const glm::
         }
 
         //! return back normal culling
-        if(iDraw == RENDER_REFLECTION) {
+        if (iDraw == RENDER_REFLECTION) {
             GX2SetCullOnlyControl(GX2_FRONT_FACE_CCW, GX2_DISABLE, GX2_ENABLE);
         }
     }

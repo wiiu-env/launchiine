@@ -26,21 +26,23 @@ class FreeTypeGX;
 
 class Application : public CThread {
 public:
-    static Application * instance() {
-        if(!applicationInstance)
+    static Application *instance() {
+        if (!applicationInstance)
             applicationInstance = new Application();
         return applicationInstance;
     }
+
     static void destroyInstance() {
-        if(applicationInstance) {
+        if (applicationInstance) {
             delete applicationInstance;
-            applicationInstance = NULL;
+            applicationInstance = nullptr;
         }
     }
 
     CVideo *getVideo(void) const {
         return video;
     }
+
     MainWindow *getMainWindow(void) const {
         return mainWindow;
     }
@@ -50,12 +52,14 @@ public:
     }
 
     int exec(void);
+
     void fadeOut(void);
 
     void quit(int code);
 
 private:
     Application();
+
     virtual ~Application();
 
     bool procUI(void);
@@ -70,9 +74,9 @@ private:
     CVideo *video;
     MainWindow *mainWindow;
     FreeTypeGX *fontSystem;
-    GuiController *controller[5];
+    GuiController *controller[5]{};
     int exitCode;
-    BOOL    sFromHBL = FALSE;
+    BOOL sFromHBL = FALSE;
 
 };
 

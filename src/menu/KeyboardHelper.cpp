@@ -4,20 +4,20 @@
 #include <coreinit/memdefaultheap.h>
 
 KeyboardHelper::KeyboardHelper() {
-    FSClient *fsClient = (FSClient *)MEMAllocFromDefaultHeap(sizeof(FSClient));
-    FSAddClient(fsClient, 0);
+    auto *_fsClient = (FSClient *) MEMAllocFromDefaultHeap(sizeof(FSClient));
+    FSAddClient(_fsClient, FS_ERROR_FLAG_ALL);
 
     // Create swkbd
     nn::swkbd::CreateArg createArg;
     createArg.regionType = nn::swkbd::RegionType::Europe;
     createArg.workMemory = MEMAllocFromDefaultHeap(nn::swkbd::GetWorkMemorySize(0));
-    memset(createArg.workMemory,0, sizeof(nn::swkbd::GetWorkMemorySize(0)));
+    memset(createArg.workMemory, 0, sizeof(nn::swkbd::GetWorkMemorySize(0)));
     this->workMemory = createArg.workMemory;
-    createArg.fsClient = fsClient;
+    createArg.fsClient = _fsClient;
     this->fsClient = createArg.fsClient;
-    DEBUG_FUNCTION_LINE("Calling create\n");
+    DEBUG_FUNCTION_LINE("Calling create");
     if (!nn::swkbd::Create(createArg)) {
-        DEBUG_FUNCTION_LINE("Failed to create keyboard\n");
+        DEBUG_FUNCTION_LINE("Failed to create keyboard");
         return;
     }
 
@@ -25,24 +25,24 @@ KeyboardHelper::KeyboardHelper() {
 }
 
 KeyboardHelper::~KeyboardHelper() {
-    if(keyboardCreated) {
+    if (keyboardCreated) {
         nn::swkbd::Destroy();
         MEMFreeToDefaultHeap(this->workMemory);
-        this->workMemory = NULL;
+        this->workMemory = nullptr;
 
-        FSDelClient(fsClient, 0);
+        FSDelClient(fsClient, FS_ERROR_FLAG_ALL);
         MEMFreeToDefaultHeap(this->fsClient);
         keyboardCreated = false;
     }
 }
 
 bool KeyboardHelper::openKeyboard() {
-    if(keyboardCreated) {
+    if (keyboardCreated) {
         // Show the keyboard
         nn::swkbd::AppearArg appearArg;
         appearArg.keyboardArg.configArg.languageType = nn::swkbd::LanguageType::English;
         if (!nn::swkbd::AppearInputForm(appearArg)) {
-            DEBUG_FUNCTION_LINE("nn::swkbd::AppearInputForm failed\n");
+            DEBUG_FUNCTION_LINE("nn::swkbd::AppearInputForm failed");
             return false;
         }
         keyboardOpen = true;
@@ -56,9 +56,9 @@ std::string KeyboardHelper::getResult() {
 }
 
 bool KeyboardHelper::checkResult() {
-    if(keyboardCreated) {
+    if (keyboardCreated) {
         VPADStatus vpadStatus;
-        if(keyboardOpen) {
+        if (keyboardOpen) {
             VPADRead(VPAD_CHAN_0, &vpadStatus, 1, nullptr);
             VPADGetTPCalibratedPoint(VPAD_CHAN_0, &vpadStatus.tpNormal, &vpadStatus.tpNormal);
         }

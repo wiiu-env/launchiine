@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <coreinit/filesystem.h>
 
@@ -10,13 +11,13 @@ public:
 
     bool checkResult();
 
-    void drawTV();
+    static void drawTV();
 
-    void drawDRC();
+    static void drawDRC();
 
     bool openKeyboard();
 
-    bool isReady(){
+    bool isReady() {
         return keyboardCreated;
     }
 
@@ -24,8 +25,8 @@ public:
 
 private:
 
-    void * workMemory = NULL;
-    FSClient * fsClient = NULL;
+    void *workMemory = nullptr;
+    FSClient *fsClient = nullptr;
     bool keyboardOpen = false;
     bool keyboardCreated = false;
     std::string resultStr = "";

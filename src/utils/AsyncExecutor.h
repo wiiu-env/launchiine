@@ -10,23 +10,24 @@
 
 class AsyncExecutor {
 public:
-    static void pushForDelete(GuiElement * element) {
-        if(!instance) {
+    static void pushForDelete(GuiElement *element) {
+        if (!instance) {
             instance = new AsyncExecutor();
         }
         instance->pushForDeleteInternal(element);
     }
+
     static void execute(std::function<void()> func) {
-        if(!instance) {
+        if (!instance) {
             instance = new AsyncExecutor();
         }
         instance->executeInternal(func);
     }
 
     static void destroyInstance() {
-        if(instance) {
+        if (instance) {
             delete instance;
-            instance = NULL;
+            instance = nullptr;
         }
     }
 
@@ -34,17 +35,19 @@ private:
     static AsyncExecutor *instance;
 
     AsyncExecutor();
+
     ~AsyncExecutor();
 
-    void pushForDeleteInternal(GuiElement * element);
+    void pushForDeleteInternal(GuiElement *element);
+
     void executeInternal(std::function<void()> func);
 
     std::recursive_mutex mutex;
-    std::thread *  thread;
+    std::thread *thread;
     volatile bool exitThread = false;
 
     std::vector<std::future<void>> elements;
 
     std::recursive_mutex deleteListMutex;
-    std::queue<GuiElement*> deleteList;
+    std::queue<GuiElement *> deleteList;
 };
