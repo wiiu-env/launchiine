@@ -1,13 +1,13 @@
 #ifndef GAME_LIST_H_
 #define GAME_LIST_H_
 
-#include <vector>
+#include <coreinit/cache.h>
+#include <coreinit/mcp.h>
+#include <gui/GuiImageData.h>
+#include <gui/sigslot.h>
 #include <mutex>
 #include <stdint.h>
-#include <coreinit/mcp.h>
-#include <coreinit/cache.h>
-#include <gui/sigslot.h>
-#include <gui/GuiImageData.h>
+#include <vector>
 
 typedef struct _gameInfo {
     uint64_t titleId;

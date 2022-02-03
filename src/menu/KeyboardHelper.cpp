@@ -1,7 +1,7 @@
-#include <nn/swkbd.h>
 #include "KeyboardHelper.h"
 #include "utils/logger.h"
 #include <coreinit/memdefaultheap.h>
+#include <nn/swkbd.h>
 
 KeyboardHelper::KeyboardHelper() {
     auto *_fsClient = (FSClient *) MEMAllocFromDefaultHeap(sizeof(FSClient));
@@ -12,9 +12,9 @@ KeyboardHelper::KeyboardHelper() {
     createArg.regionType = nn::swkbd::RegionType::Europe;
     createArg.workMemory = MEMAllocFromDefaultHeap(nn::swkbd::GetWorkMemorySize(0));
     memset(createArg.workMemory, 0, sizeof(nn::swkbd::GetWorkMemorySize(0)));
-    this->workMemory = createArg.workMemory;
+    this->workMemory   = createArg.workMemory;
     createArg.fsClient = _fsClient;
-    this->fsClient = createArg.fsClient;
+    this->fsClient     = createArg.fsClient;
     DEBUG_FUNCTION_LINE("Calling create");
     if (!nn::swkbd::Create(createArg)) {
         DEBUG_FUNCTION_LINE("Failed to create keyboard");
@@ -64,7 +64,7 @@ bool KeyboardHelper::checkResult() {
         }
         // Update keyboard
         nn::swkbd::ControllerInfo controllerInfo;
-        controllerInfo.vpad = &vpadStatus;
+        controllerInfo.vpad    = &vpadStatus;
         controllerInfo.kpad[0] = nullptr;
         controllerInfo.kpad[1] = nullptr;
         controllerInfo.kpad[2] = nullptr;
@@ -98,7 +98,7 @@ bool KeyboardHelper::checkResult() {
                 }
             }
             this->resultStr = logStr;
-            keyboardOpen = false;
+            keyboardOpen    = false;
             nn::swkbd::DisappearInputForm();
             return true;
         }

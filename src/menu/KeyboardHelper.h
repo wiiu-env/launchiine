@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <coreinit/filesystem.h>
+#include <string>
 
 class KeyboardHelper {
 public:
@@ -24,10 +24,9 @@ public:
     std::string getResult();
 
 private:
-
-    void *workMemory = nullptr;
-    FSClient *fsClient = nullptr;
-    bool keyboardOpen = false;
-    bool keyboardCreated = false;
+    void *workMemory      = nullptr;
+    FSClient *fsClient    = nullptr;
+    bool keyboardOpen     = false;
+    bool keyboardCreated  = false;
     std::string resultStr = "";
 };

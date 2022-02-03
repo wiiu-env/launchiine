@@ -1,9 +1,9 @@
-#include <string.h>
-#include <stdlib.h>
+#include <malloc.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
+#include <string.h>
 #include <utils/logger.h>
 
 // https://gist.github.com/ccbrown/9722406

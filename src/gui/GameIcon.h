@@ -15,8 +15,8 @@ public:
     }
 
     void setColorIntensity(const glm::vec4 &color) {
-        colorIntensity = color;
-        colorIntensityMirror = colorIntensity;
+        colorIntensity                   = color;
+        colorIntensityMirror             = colorIntensity;
         selectionBlurOuterColorIntensity = color * glm::vec4(0.09411764f * 1.15f, 0.56862745f * 1.15f, 0.96862745098f * 1.15f, 1.0f);
         selectionBlurInnerColorIntensity = color * glm::vec4(0.46666667f, 0.90588235f, 1.0f, 1.0f);
     }
