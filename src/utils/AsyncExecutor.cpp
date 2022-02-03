@@ -14,7 +14,7 @@ AsyncExecutor::AsyncExecutor() {
         while (!exitThread) {
             mutex.lock();
             bool emptyList = elements.empty();
-            auto it = elements.begin();
+            auto it        = elements.begin();
             while (it != elements.end()) {
                 auto future = it;
                 auto status = future->wait_for(std::chrono::seconds(0));

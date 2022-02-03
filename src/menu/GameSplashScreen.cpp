@@ -1,25 +1,23 @@
 #include "GameSplashScreen.h"
-#include "utils/logger.h"
 #include "common/common.h"
 #include "fs/FSUtils.h"
 #include "utils/AsyncExecutor.h"
+#include "utils/logger.h"
 
 GameSplashScreen::GameSplashScreen(int32_t w, int32_t h, gameInfo *info, bool onTV) : GuiFrame(w, h),
-                                                                                      bgImageColor(w, h, (GX2Color) {
-                                                                                              0, 0, 0, 0
-                                                                                      }) {
-    bgImageColor.setImageColor((GX2Color) {
-            79, 153, 239, 255
-    }, 0);
-    bgImageColor.setImageColor((GX2Color) {
-            79, 153, 239, 255
-    }, 1);
-    bgImageColor.setImageColor((GX2Color) {
-            59, 159, 223, 255
-    }, 2);
-    bgImageColor.setImageColor((GX2Color) {
-            59, 159, 223, 255
-    }, 3);
+                                                                                      bgImageColor(w, h, (GX2Color){0, 0, 0, 0}) {
+    bgImageColor.setImageColor((GX2Color){
+                                       79, 153, 239, 255},
+                               0);
+    bgImageColor.setImageColor((GX2Color){
+                                       79, 153, 239, 255},
+                               1);
+    bgImageColor.setImageColor((GX2Color){
+                                       59, 159, 223, 255},
+                               2);
+    bgImageColor.setImageColor((GX2Color){
+                                       59, 159, 223, 255},
+                               3);
     append(&bgImageColor);
     this->onTV = onTV;
     this->info = info;
@@ -28,9 +26,9 @@ GameSplashScreen::GameSplashScreen(int32_t w, int32_t h, gameInfo *info, bool on
     if (onTV) {
         filepath = "fs:" + info->gamePath + META_PATH + "/bootTVTex.tga";
     }
-    uint8_t *buffer = nullptr;
+    uint8_t *buffer     = nullptr;
     uint32_t bufferSize = 0;
-    int iResult = FSUtils::LoadFileToMem(filepath.c_str(), &buffer, &bufferSize);
+    int iResult         = FSUtils::LoadFileToMem(filepath.c_str(), &buffer, &bufferSize);
     if (iResult > 0) {
         splashScreenData = new GuiImageData(buffer, bufferSize, GX2_TEX_CLAMP_MODE_MIRROR);
         if (splashScreenData) {

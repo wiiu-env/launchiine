@@ -14,37 +14,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-#include <map>
-#include <algorithm>
-#include <gui/GuiIconGrid.h>
-#include <gui/GuiController.h>
-#include <coreinit/cache.h>
-#include "common/common.h"
 #include "Application.h"
-#include <gui/video/CVideo.h>
-#include "utils/logger.h"
+#include "common/common.h"
 #include "gui/GameIcon.h"
+#include "utils/logger.h"
+#include <algorithm>
+#include <coreinit/cache.h>
+#include <gui/GuiController.h>
+#include <gui/GuiIconGrid.h>
+#include <gui/video/CVideo.h>
+#include <map>
 
 GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex, bool sortByName)
-        : GuiTitleBrowser(w, h, GameIndex),
-          sortByName(sortByName),
-          particleBgImage(w, h, 50, 60.0f, 90.0f, 0.6f, 1.0f), buttonClickSound(Resources::GetSound("button_click.mp3")), gameTitle((char *) nullptr, 52, glm::vec4(1.0f)),
-          touchTrigger(GuiTrigger::CHANNEL_1, GuiTrigger::VPAD_TOUCH),
-          wpadTouchTrigger(GuiTrigger::CHANNEL_2 | GuiTrigger::CHANNEL_3 | GuiTrigger::CHANNEL_4 | GuiTrigger::CHANNEL_5, GuiTrigger::BUTTON_A),
-          leftTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_LEFT | GuiTrigger::STICK_L_LEFT, true),
-          rightTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_RIGHT | GuiTrigger::STICK_L_RIGHT, true),
-          downTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_DOWN | GuiTrigger::STICK_L_DOWN, true), upTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_UP | GuiTrigger::STICK_L_UP, true),
-          buttonATrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_A, true), buttonLTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_L, true),
-          buttonRTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_R, true), leftButton(w, h), rightButton(w, h), downButton(w, h), upButton(w, h), launchButton(w, h),
-          arrowRightImageData(Resources::GetImageData("rightArrow.png")), arrowLeftImageData(Resources::GetImageData("leftArrow.png")), arrowRightImage(arrowRightImageData),
-          arrowLeftImage(arrowLeftImageData), arrowRightButton(arrowRightImage.getWidth(), arrowRightImage.getHeight()), arrowLeftButton(arrowLeftImage.getWidth(), arrowLeftImage.getHeight()),
-          noIcon(Resources::GetFile("noGameIcon.png"), Resources::GetFileSize("noGameIcon.png"), GX2_TEX_CLAMP_MODE_MIRROR),
-          emptyIcon(Resources::GetFile("iconEmpty.png"), Resources::GetFileSize("iconEmpty.png"), GX2_TEX_CLAMP_MODE_MIRROR), dragListener(w, h) {
+    : GuiTitleBrowser(w, h, GameIndex),
+      sortByName(sortByName),
+      particleBgImage(w, h, 50, 60.0f, 90.0f, 0.6f, 1.0f), buttonClickSound(Resources::GetSound("button_click.mp3")), gameTitle((char *) nullptr, 52, glm::vec4(1.0f)),
+      touchTrigger(GuiTrigger::CHANNEL_1, GuiTrigger::VPAD_TOUCH),
+      wpadTouchTrigger(GuiTrigger::CHANNEL_2 | GuiTrigger::CHANNEL_3 | GuiTrigger::CHANNEL_4 | GuiTrigger::CHANNEL_5, GuiTrigger::BUTTON_A),
+      leftTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_LEFT | GuiTrigger::STICK_L_LEFT, true),
+      rightTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_RIGHT | GuiTrigger::STICK_L_RIGHT, true),
+      downTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_DOWN | GuiTrigger::STICK_L_DOWN, true), upTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_UP | GuiTrigger::STICK_L_UP, true),
+      buttonATrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_A, true), buttonLTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_L, true),
+      buttonRTrigger(GuiTrigger::CHANNEL_ALL, GuiTrigger::BUTTON_R, true), leftButton(w, h), rightButton(w, h), downButton(w, h), upButton(w, h), launchButton(w, h),
+      arrowRightImageData(Resources::GetImageData("rightArrow.png")), arrowLeftImageData(Resources::GetImageData("leftArrow.png")), arrowRightImage(arrowRightImageData),
+      arrowLeftImage(arrowLeftImageData), arrowRightButton(arrowRightImage.getWidth(), arrowRightImage.getHeight()), arrowLeftButton(arrowLeftImage.getWidth(), arrowLeftImage.getHeight()),
+      noIcon(Resources::GetFile("noGameIcon.png"), Resources::GetFileSize("noGameIcon.png"), GX2_TEX_CLAMP_MODE_MIRROR),
+      emptyIcon(Resources::GetFile("iconEmpty.png"), Resources::GetFileSize("iconEmpty.png"), GX2_TEX_CLAMP_MODE_MIRROR), dragListener(w, h) {
 
     particleBgImage.setParent(this);
     setSelectedGame(GameIndex);
-    listOffset = selectedGame / (MAX_COLS * MAX_ROWS);
-    targetLeftPosition = -listOffset * getWidth();
+    listOffset          = selectedGame / (MAX_COLS * MAX_ROWS);
+    targetLeftPosition  = -listOffset * getWidth();
     currentLeftPosition = targetLeftPosition;
 
     leftButton.setTrigger(&leftTrigger);
@@ -126,18 +126,18 @@ GuiIconGrid::GuiIconGrid(int32_t w, int32_t h, uint64_t GameIndex, bool sortByNa
 
 GuiIconGrid::~GuiIconGrid() {
     containerMutex.lock();
-    for (auto const &x: gameInfoContainers) {
+    for (auto const &x : gameInfoContainers) {
         remove(x.second->button);
         delete x.second;
     }
     gameInfoContainers.clear();
     containerMutex.unlock();
 
-    for (auto const &x: emptyButtons) {
+    for (auto const &x : emptyButtons) {
         delete x;
     }
 
-    for (auto const &x: emptyIcons) {
+    for (auto const &x : emptyIcons) {
         delete x;
     }
 
@@ -163,7 +163,7 @@ void GuiIconGrid::setSelectedGame(uint64_t idx) {
 
     containerMutex.lock();
     GameInfoContainer *container = nullptr;
-    for (auto const &x: gameInfoContainers) {
+    for (auto const &x : gameInfoContainers) {
         container = x.second;
         if (x.first == idx) {
             container->image->setSelected(true);
@@ -178,7 +178,7 @@ void GuiIconGrid::setSelectedGame(uint64_t idx) {
     if (offset > 0) {
         uint32_t newPage = offset / (MAX_COLS * MAX_ROWS);
         if (newPage != (uint32_t) curPage) {
-            curPage = newPage;
+            curPage          = newPage;
             bUpdatePositions = true;
         }
     }
@@ -215,10 +215,10 @@ void GuiIconGrid::OnGameTitleListUpdated(GameList *gameList) {
     }
 
     for (int32_t i = 0; i < gameList->size(); i++) {
-        gameInfo *info = gameList->at(i);
+        gameInfo *info               = gameList->at(i);
         GameInfoContainer *container = nullptr;
 
-        for (auto const &x: gameInfoContainers) {
+        for (auto const &x : gameInfoContainers) {
             if (info->titleId == x.first) {
                 container = x.second;
                 break;
@@ -233,9 +233,9 @@ void GuiIconGrid::OnGameTitleListUpdated(GameList *gameList) {
     gameList->unlock();
     setSelectedGame(0);
     gameSelectionChanged(this, selectedGame);
-    curPage = 0;
+    curPage             = 0;
     currentLeftPosition = 0;
-    bUpdatePositions = true;
+    bUpdatePositions    = true;
 }
 
 void GuiIconGrid::OnLeftArrowClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
@@ -268,7 +268,6 @@ void GuiIconGrid::OnLeftClick(GuiButton *button, const GuiController *controller
         setSelectedGame(newTitleId);
         gameSelectionChanged(this, selectedGame);
     }
-
 }
 
 void GuiIconGrid::OnRightClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
@@ -379,7 +378,7 @@ void GuiIconGrid::OnGameButtonHeld(GuiButton *button, const GuiController *contr
     if (currentlyHeld == nullptr) {
         bool found = false;
         // We don't want to drag empty buttons
-        for (auto const &x: emptyButtons) {
+        for (auto const &x : emptyButtons) {
             if (x == button) {
                 found = true;
                 break;
@@ -395,11 +394,9 @@ void GuiIconGrid::OnGameButtonHeld(GuiButton *button, const GuiController *contr
 }
 
 void GuiIconGrid::OnGameButtonPointedOn(GuiButton *button, const GuiController *controller) {
-
 }
 
 void GuiIconGrid::OnGameButtonPointedOff(GuiButton *button, const GuiController *controller) {
-
 }
 
 void GuiIconGrid::OnDrag(GuiDragListener *element, const GuiController *controller, GuiTrigger *trigger, int32_t dx, int32_t dy) {
@@ -412,7 +409,7 @@ void GuiIconGrid::OnDrag(GuiDragListener *element, const GuiController *controll
 
 void GuiIconGrid::OnGameButtonClick(GuiButton *button, const GuiController *controller, GuiTrigger *trigger) {
     containerMutex.lock();
-    for (auto const &x: gameInfoContainers) {
+    for (auto const &x : gameInfoContainers) {
         if (x.second->button == button) {
             if (selectedGame == (x.second->info->titleId)) {
                 if (gameLaunchTimer < 30)
@@ -466,7 +463,7 @@ void GuiIconGrid::OnGameTitleAdded(gameInfo *info) {
     bool foundFreePlace = false;
     for (uint32_t i = 0; i < position.size(); i++) {
         if (position[i] == 0) {
-            position[i] = info->titleId;
+            position[i]    = info->titleId;
             foundFreePlace = true;
             break;
         }
@@ -483,7 +480,7 @@ void GuiIconGrid::OnGameTitleUpdated(gameInfo *info) {
     DEBUG_FUNCTION_LINE("Updating infos of %016llX", info->titleId);
     GameInfoContainer *container = nullptr;
     containerMutex.lock();
-    for (auto const &x: gameInfoContainers) {
+    for (auto const &x : gameInfoContainers) {
         if (info->titleId == x.first) {
             container = x.second;
             break;
@@ -514,7 +511,7 @@ void GuiIconGrid::process() {
                 std::copy(gameInfoContainers.begin(), gameInfoContainers.end(), std::back_inserter<std::vector<std::pair<uint64_t, GameInfoContainer *>>>(vec));
                 containerMutex.unlock();
                 uint64_t targetTitleId = 0;
-                for (auto const &x: vec) {
+                for (auto const &x : vec) {
                     if (x.second->button == dragTarget) {
                         targetTitleId = x.first;
                         break;
@@ -543,11 +540,11 @@ void GuiIconGrid::process() {
                 }
             }
             positionMutex.unlock();
-            currentlyHeld = nullptr;
+            currentlyHeld        = nullptr;
             currentlyHeldTitleId = 0;
 
             currentlyHeldPosition = -1;
-            bUpdatePositions = true;
+            bUpdatePositions      = true;
         } else {
             //DEBUG_FUNCTION_LINE("Holding it");
             bUpdatePositions = true;
@@ -602,14 +599,14 @@ void GuiIconGrid::updateButtonPositions() {
 
     containerMutex.unlock();
 
-    for (auto const &x: vec) {
+    for (auto const &x : vec) {
         if (x.second->button == currentlyHeld) {
             currentlyHeldTitleId = x.first;
         }
         remove(x.second->button);
     }
 
-    for (auto const &x: emptyButtons) {
+    for (auto const &x : emptyButtons) {
         remove(x);
     }
 
@@ -629,12 +626,12 @@ void GuiIconGrid::updateButtonPositions() {
     for (uint32_t i = 0; i < position.size(); i++) {
         if (position[i] == currentlyHeldTitleId) {
             currentlyHeldPosition = i;
-            position[i] = 0;
+            position[i]           = 0;
         }
     }
 
     uint32_t elementSize = position.size();
-    uint32_t pages = (elementSize / (MAX_COLS * MAX_ROWS)) + 1;
+    uint32_t pages       = (elementSize / (MAX_COLS * MAX_ROWS)) + 1;
     if (elementSize % (MAX_COLS * MAX_ROWS) == 0) {
         pages--;
     }
@@ -662,10 +659,10 @@ void GuiIconGrid::updateButtonPositions() {
     }
 
     uint32_t startPage = -(currentLeftPosition / getWidth());
-    uint32_t endPage = startPage;
+    uint32_t endPage   = startPage;
 
     if (targetLeftPosition != currentLeftPosition) {
-        for (auto const &x: vec) {
+        for (auto const &x : vec) {
             x.second->button->setHoldable(false);
         }
         endPage++;
@@ -673,7 +670,7 @@ void GuiIconGrid::updateButtonPositions() {
             endPage = pages;
         }
     } else {
-        for (auto const &x: vec) {
+        for (auto const &x : vec) {
             x.second->button->setHoldable(true);
         }
     }
@@ -685,10 +682,10 @@ void GuiIconGrid::updateButtonPositions() {
     }
 
     for (uint32_t i = startPage * (MAX_COLS * MAX_ROWS); i < (endPage + 1) * (MAX_COLS * MAX_ROWS); i++) {
-        listOff = i / (MAX_COLS * MAX_ROWS);
+        listOff            = i / (MAX_COLS * MAX_ROWS);
         GuiButton *element = nullptr;
-        float posX = currentLeftPosition + listOff * width + (col * (noIcon.getWidth() + noIcon.getWidth() * 0.5f) - (MAX_COLS * 0.5f - 0.5f) * (noIcon.getWidth() + noIcon.getWidth() * 0.5f));
-        float posY = -row * (noIcon.getHeight() + noIcon.getHeight() * 0.5f) + (MAX_ROWS * 0.5f - 0.5f) * (noIcon.getHeight() + noIcon.getHeight() * 0.5f) + 30.0f;
+        float posX         = currentLeftPosition + listOff * width + (col * (noIcon.getWidth() + noIcon.getWidth() * 0.5f) - (MAX_COLS * 0.5f - 0.5f) * (noIcon.getWidth() + noIcon.getWidth() * 0.5f));
+        float posY         = -row * (noIcon.getHeight() + noIcon.getHeight() * 0.5f) + (MAX_ROWS * 0.5f - 0.5f) * (noIcon.getHeight() + noIcon.getHeight() * 0.5f) + 30.0f;
 
         if (i < position.size()) {
             uint64_t titleID = position.at(i);

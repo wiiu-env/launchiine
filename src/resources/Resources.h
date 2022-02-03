@@ -2,6 +2,7 @@
 
 #include <map>
 #include <stdint.h>
+#include <string>
 
 //! forward declaration
 class GuiImageData;
@@ -33,6 +34,6 @@ private:
 
     ~Resources() {}
 
-    std::map<std::string, std::pair<uint32_t, GuiImageData *> > imageDataMap;
-    std::map<std::string, std::pair<uint32_t, GuiSound *> > soundDataMap;
+    std::map<std::string, std::pair<uint32_t, GuiImageData *>> imageDataMap;
+    std::map<std::string, std::pair<uint32_t, GuiSound *>> soundDataMap;
 };

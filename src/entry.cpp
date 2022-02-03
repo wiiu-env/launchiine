@@ -1,18 +1,18 @@
-#include "common/common.h"
-#include <whb/log_cafe.h>
-#include <whb/log_udp.h>
-#include <whb/log_module.h>
-#include "utils/logger.h"
 #include "Application.h"
+#include "common/common.h"
+#include "utils/logger.h"
+#include <whb/log_cafe.h>
+#include <whb/log_module.h>
+#include <whb/log_udp.h>
 
 int32_t main(int32_t argc, char **argv) {
     bool moduleInit;
     bool cafeInit = false;
-    bool udpInit = false;
+    bool udpInit  = false;
 
     if (!(moduleInit = WHBLogModuleInit())) {
         cafeInit = WHBLogCafeInit();
-        udpInit = WHBLogUdpInit();
+        udpInit  = WHBLogUdpInit();
     }
     DEBUG_FUNCTION_LINE("Starting launchiine " LAUNCHIINE_VERSION "");
 
