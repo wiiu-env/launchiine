@@ -4,6 +4,7 @@
 #include <whb/log_module.h>
 #include "utils/logger.h"
 #include "Application.h"
+#include "StorageUtils.h"
 
 int32_t main(int32_t argc, char **argv) {
     bool moduleInit;
@@ -14,7 +15,10 @@ int32_t main(int32_t argc, char **argv) {
         cafeInit = WHBLogCafeInit();
         udpInit = WHBLogUdpInit();
     }
+
     DEBUG_FUNCTION_LINE("Starting launchiine " LAUNCHIINE_VERSION "");
+
+    initExternalStorage();
 
     DEBUG_FUNCTION_LINE("Start main application");
     Application::instance()->exec();

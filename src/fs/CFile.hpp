@@ -1,10 +1,10 @@
 #ifndef CFILE_HPP_
 #define CFILE_HPP_
 
-#include <stdio.h>
-#include <string>
-#include <string.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
+#include <string>
 #include <unistd.h>
 #include <wut_types.h>
 
@@ -30,11 +30,13 @@ public:
     int32_t open(const uint8_t *memory, int32_t memsize);
 
     BOOL isOpen() const {
-        if (iFd >= 0)
+        if (iFd >= 0) {
             return true;
+        }
 
-        if (mem_file)
+        if (mem_file) {
             return true;
+        }
 
         return false;
     }

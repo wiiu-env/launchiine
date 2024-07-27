@@ -2,7 +2,7 @@
 #define _GAME_ICON_H_
 
 #include <gui/GuiImageAsync.h>
-#include <gui/video/shaders/Shader3D.h>
+#include <video/shaders/Shader3D.h>
 
 class GameIcon : public GuiImage {
 public:

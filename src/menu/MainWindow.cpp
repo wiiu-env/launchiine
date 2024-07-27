@@ -403,10 +403,6 @@ void MainWindow::OnGameLaunchSplashScreenFinished(GuiElement *element, gameInfo 
     }
 }
 
-extern "C" int32_t SYSSwitchToBrowser(void *);
-extern "C" int32_t SYSSwitchToEShop(void *);
-extern "C" int32_t _SYSSwitchTo(uint32_t pfid);
-
 void MainWindow::OnGameLaunch(uint64_t titleId) {
     DEBUG_FUNCTION_LINE("Launch GAME!!");
 
@@ -422,6 +418,7 @@ void MainWindow::OnGameLaunch(uint64_t titleId) {
         titleId == 0x000500301001200AL) {
         DEBUG_FUNCTION_LINE("Launching the browser");
         SYSSwitchToBrowser(nullptr);
+
         return;
     }
     if (titleId == 0x000500301001400AL ||
@@ -436,28 +433,28 @@ void MainWindow::OnGameLaunch(uint64_t titleId) {
         titleId == 0x000500301001810AL ||
         titleId == 0x000500301001820AL) {
         DEBUG_FUNCTION_LINE("Launching the Download Management");
-        _SYSSwitchTo(12);
+        _SYSSwitchTo(SYSAPP_PFID_DOWNLOAD_MANAGEMENT);
         return;
     }
     if (titleId == 0x000500301001600AL ||
         titleId == 0x000500301001610AL ||
         titleId == 0x000500301001620AL) {
         DEBUG_FUNCTION_LINE("Launching Miiverse");
-        _SYSSwitchTo(9);
+        _SYSSwitchTo(SYSAPP_PFID_MIIVERSE);
         return;
     }
     if (titleId == 0x000500301001500AL ||
         titleId == 0x000500301001510AL ||
         titleId == 0x000500301001520AL) {
         DEBUG_FUNCTION_LINE("Launching Friendlist");
-        _SYSSwitchTo(11);
+        _SYSSwitchTo(SYSAPP_PFID_FRIENDLIST);
         return;
     }
     if (titleId == 0x000500301001300AL ||
         titleId == 0x000500301001310AL ||
         titleId == 0x000500301001320AL) {
         DEBUG_FUNCTION_LINE("Launching TVii");
-        _SYSSwitchTo(3);
+        _SYSSwitchTo(SYSAPP_PFID_TVII);
         return;
     }
 
@@ -467,7 +464,7 @@ void MainWindow::OnGameLaunch(uint64_t titleId) {
     MCP_Close(handle);
     if (err == 0) {
         ACPAssignTitlePatch(&titleInfo);
-        _SYSLaunchTitleWithStdArgsInNoSplash(titleId, nullptr);
+        _SYSLaunchTitleByPathFromLauncher(titleInfo.path, strlen(titleInfo.path));
         return;
     }
 

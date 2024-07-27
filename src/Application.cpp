@@ -25,8 +25,8 @@
 #include <gui/VPadController.h>
 #include <gui/WPadController.h>
 #include "resources/Resources.h"
-#include <gui/sounds/SoundHandler.hpp>
-#include <gui/memory.h>
+#include <sounds/SoundHandler.hpp>
+#include "system/memory.h"
 #include "utils/logger.h"
 #include "utils/AsyncExecutor.h"
 #include <thread>

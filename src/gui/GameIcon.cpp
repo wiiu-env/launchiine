@@ -1,9 +1,9 @@
 #include "GameIcon.h"
 #include "GameIconModel.h"
 #include "Application.h"
-#include <gui/video/CVideo.h>
-#include <gui/video/shaders/Shader3D.h>
-#include <gui/video/shaders/ShaderFractalColor.h>
+#include <video/CVideo.h>
+#include <video/shaders/Shader3D.h>
+#include <video/shaders/ShaderFractalColor.h>
 #include "utils/utils.h"
 #include "utils/logger.h"
 

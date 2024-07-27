@@ -21,7 +21,7 @@
 #include <coreinit/cache.h>
 #include "common/common.h"
 #include "Application.h"
-#include <gui/video/CVideo.h>
+#include <video/CVideo.h>
 #include "utils/logger.h"
 #include "gui/GameIcon.h"
 
