@@ -33,6 +33,6 @@ private:
 
     ~Resources() {}
 
-    std::map<std::string, std::pair<uint32_t, GuiImageData *> > imageDataMap;
-    std::map<std::string, std::pair<uint32_t, GuiSound *> > soundDataMap;
+    std::map<std::string, std::pair<uint32_t, GuiImageData *>> imageDataMap;
+    std::map<std::string, std::pair<uint32_t, GuiSound *>> soundDataMap;
 };

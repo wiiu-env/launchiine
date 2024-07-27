@@ -1,8 +1,8 @@
 #pragma once
 
+#include "game/GameList.h"
 #include <gui/Gui.h>
 #include <gui/sigslot.h>
-#include "game/GameList.h"
 
 class GuiTitleBrowser : public GuiFrame {
 public:

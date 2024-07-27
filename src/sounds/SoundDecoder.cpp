@@ -19,8 +19,8 @@
 #include <coreinit/cache.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
-#include <sounds/SoundDecoder.hpp>
 #include <malloc.h>
+#include <sounds/SoundDecoder.hpp>
 #include <string.h>
 #include <unistd.h>
 

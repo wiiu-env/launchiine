@@ -26,8 +26,8 @@
 #ifndef SOUND_DECODER_HPP
 #define SOUND_DECODER_HPP
 
-#include <sounds/BufferCircle.hpp>
 #include <mutex>
+#include <sounds/BufferCircle.hpp>
 #include <string>
 
 class CFile;

@@ -14,29 +14,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
+#include "Application.h"
+#include "common/common.h"
+#include "resources/Resources.h"
+#include "system/memory.h"
+#include "utils/AsyncExecutor.h"
+#include "utils/logger.h"
 #include <coreinit/core.h>
 #include <coreinit/foreground.h>
 #include <coreinit/title.h>
-#include <proc_ui/procui.h>
-#include <sysapp/launch.h>
-#include "Application.h"
-#include "common/common.h"
 #include <gui/FreeTypeGX.h>
 #include <gui/VPadController.h>
 #include <gui/WPadController.h>
-#include "resources/Resources.h"
+#include <proc_ui/procui.h>
 #include <sounds/SoundHandler.hpp>
-#include "system/memory.h"
-#include "utils/logger.h"
-#include "utils/AsyncExecutor.h"
+#include <sysapp/launch.h>
 #include <thread>
 
 Application *Application::applicationInstance = nullptr;
-bool Application::exitApplication = false;
-bool Application::quitRequest = false;
+bool Application::exitApplication             = false;
+bool Application::quitRequest                 = false;
 
 Application::Application()
-        : CThread(CThread::eAttributeAffCore1 | CThread::eAttributePinnedAff, 0, 0x800000), bgMusic(nullptr), video(nullptr), mainWindow(nullptr), fontSystem(nullptr), exitCode(0) {
+    : CThread(CThread::eAttributeAffCore1 | CThread::eAttributePinnedAff, 0, 0x800000), bgMusic(nullptr), video(nullptr), mainWindow(nullptr), fontSystem(nullptr), exitCode(0) {
     controller[0] = new VPadController(GuiTrigger::CHANNEL_1);
     controller[1] = new WPadController(GuiTrigger::CHANNEL_2);
     controller[2] = new WPadController(GuiTrigger::CHANNEL_3);
@@ -62,7 +62,7 @@ Application::~Application() {
 
     DEBUG_FUNCTION_LINE("Destroy controller");
 
-    for (auto &i: controller) {
+    for (auto &i : controller) {
         delete i;
     }
 
@@ -88,15 +88,13 @@ int32_t Application::exec() {
 }
 
 void Application::quit(int32_t code) {
-    exitCode = code;
+    exitCode        = code;
     exitApplication = true;
-    quitRequest = true;
+    quitRequest     = true;
 }
 
 void Application::fadeOut() {
-    GuiImage fadeOut(video->getTvWidth(), video->getTvHeight(), (GX2Color) {
-            0, 0, 0, 255
-    });
+    GuiImage fadeOut(video->getTvWidth(), video->getTvHeight(), (GX2Color){0, 0, 0, 255});
 
     for (int32_t i = 0; i < 255; i += 10) {
         if (i > 255)
@@ -138,7 +136,7 @@ bool Application::procUI() {
     switch (ProcUIProcessMessages(true)) {
         case PROCUI_STATUS_EXITING: {
             DEBUG_FUNCTION_LINE("PROCUI_STATUS_EXITING");
-            exitCode = EXIT_SUCCESS;
+            exitCode        = EXIT_SUCCESS;
             exitApplication = true;
             break;
         }
@@ -185,7 +183,6 @@ bool Application::procUI() {
                         DEBUG_FUNCTION_LINE("Initialize main window");
                         mainWindow = new MainWindow(video->getTvWidth(), video->getTvHeight());
                     }
-
                 }
                 executeProcess = true;
             }
@@ -212,7 +209,7 @@ void Application::executeThread() {
         mainWindow->process();
 
         //! Read out inputs
-        for (auto &i: controller) {
+        for (auto &i : controller) {
             if (!i->update(video->getTvWidth(), video->getTvHeight()))
                 continue;
 

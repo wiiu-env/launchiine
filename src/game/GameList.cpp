@@ -1,14 +1,14 @@
 #include <algorithm>
-#include <string>
-#include <string.h>
+#include <coreinit/cache.h>
 #include <coreinit/mcp.h>
 #include <nn/acp/nn_acp_types.h>
 #include <nn/acp/title.h>
-#include <coreinit/cache.h>
+#include <string.h>
+#include <string>
 
-#include "utils/AsyncExecutor.h"
 #include "GameList.h"
 #include "common/common.h"
+#include "utils/AsyncExecutor.h"
 
 #include "fs/FSUtils.h"
 #include "utils/logger.h"
@@ -24,7 +24,7 @@ GameList::~GameList() {
 
 void GameList::clear() {
     lock();
-    for (auto const &x: fullGameList) {
+    for (auto const &x : fullGameList) {
         if (x != nullptr) {
             if (x->imageData != nullptr) {
                 AsyncExecutor::pushForDelete(x->imageData);
@@ -55,7 +55,7 @@ gameInfo *GameList::getGameInfo(uint64_t titleId) {
 
 int32_t GameList::readGameList() {
     // Clear list
-    for (auto const &x: fullGameList) {
+    for (auto const &x : fullGameList) {
         delete x;
     }
 
@@ -92,10 +92,10 @@ int32_t GameList::readGameList() {
             MCP_APP_TYPE_ACCOUNT_APPS,
     };
 
-    for (auto appType: menuAppTypes) {
+    for (auto appType : menuAppTypes) {
         uint32_t titleCountByType = 0;
-        MCPError err = MCP_TitleListByAppType(mcp, appType, &titleCountByType, titles.data() + realTitleCount,
-                                              (titles.size() - realTitleCount) * sizeof(decltype(titles)::value_type));
+        MCPError err              = MCP_TitleListByAppType(mcp, appType, &titleCountByType, titles.data() + realTitleCount,
+                                                           (titles.size() - realTitleCount) * sizeof(decltype(titles)::value_type));
         if (err < 0) {
             MCP_Close(mcp);
             return 0;
@@ -106,12 +106,12 @@ int32_t GameList::readGameList() {
         titles.resize(realTitleCount);
     }
 
-    for (auto title_candidate: titles) {
-        auto *newGameInfo = new gameInfo;
-        newGameInfo->titleId = title_candidate.titleId;
-        newGameInfo->appType = title_candidate.appType;
-        newGameInfo->gamePath = title_candidate.path;
-        newGameInfo->name = "<unknown>";
+    for (auto title_candidate : titles) {
+        auto *newGameInfo      = new gameInfo;
+        newGameInfo->titleId   = title_candidate.titleId;
+        newGameInfo->appType   = title_candidate.appType;
+        newGameInfo->gamePath  = title_candidate.path;
+        newGameInfo->name      = "<unknown>";
         newGameInfo->imageData = nullptr;
         DCFlushRange(newGameInfo, sizeof(gameInfo));
 
@@ -141,11 +141,11 @@ int32_t GameList::readGameList() {
 
             if (header->imageData == nullptr) {
                 std::string filepath = "fs:" + header->gamePath + META_PATH + "/iconTex.tga";
-                uint8_t *buffer = nullptr;
-                uint32_t bufferSize = 0;
-                int iResult = FSUtils::LoadFileToMem(filepath.c_str(), &buffer, &bufferSize);
+                uint8_t *buffer      = nullptr;
+                uint32_t bufferSize  = 0;
+                int iResult          = FSUtils::LoadFileToMem(filepath.c_str(), &buffer, &bufferSize);
                 if (iResult > 0) {
-                    auto *imageData = new GuiImageData(buffer, bufferSize, GX2_TEX_CLAMP_MODE_MIRROR);
+                    auto *imageData   = new GuiImageData(buffer, bufferSize, GX2_TEX_CLAMP_MODE_MIRROR);
                     header->imageData = imageData;
 
                     //! free original image buffer which is converted to texture now and not needed anymore
@@ -173,7 +173,7 @@ void GameList::updateTitleInfo() {
                 auto acp = ACPGetTitleMetaXml(newHeader->titleId, meta);
                 if (acp >= 0) {
                     newHeader->name = meta->shortname_en;
-                    hasChanged = true;
+                    hasChanged      = true;
                 }
                 free(meta);
             }
@@ -181,14 +181,14 @@ void GameList::updateTitleInfo() {
 
         if (newHeader->imageData == nullptr) {
             std::string filepath = "fs:" + newHeader->gamePath + META_PATH + "/iconTex.tga";
-            uint8_t *buffer = nullptr;
-            uint32_t bufferSize = 0;
-            int iResult = FSUtils::LoadFileToMem(filepath.c_str(), &buffer, &bufferSize);
+            uint8_t *buffer      = nullptr;
+            uint32_t bufferSize  = 0;
+            int iResult          = FSUtils::LoadFileToMem(filepath.c_str(), &buffer, &bufferSize);
 
             if (iResult > 0) {
-                auto *imageData = new GuiImageData(buffer, bufferSize, GX2_TEX_CLAMP_MODE_MIRROR);
+                auto *imageData      = new GuiImageData(buffer, bufferSize, GX2_TEX_CLAMP_MODE_MIRROR);
                 newHeader->imageData = imageData;
-                hasChanged = true;
+                hasChanged           = true;
 
                 //! free original image buffer which is converted to texture now and not needed anymore
                 free(buffer);

@@ -16,25 +16,25 @@
  ****************************************************************************/
 #include "MainWindow.h"
 #include "Application.h"
-#include "utils/logger.h"
 #include "utils/StringTools.h"
+#include "utils/logger.h"
 
-#include "resources/Resources.h"
-#include "gui/GuiTitleBrowser.h"
-#include "gui/GuiIconGrid.h"
-#include <sysapp/launch.h>
-#include <future>
-#include <coreinit/title.h>
-#include <nn/acp/title.h>
-#include "utils/AsyncExecutor.h"
 #include "GameSplashScreen.h"
+#include "gui/GuiIconGrid.h"
+#include "gui/GuiTitleBrowser.h"
+#include "resources/Resources.h"
+#include "utils/AsyncExecutor.h"
+#include <coreinit/title.h>
+#include <future>
+#include <nn/acp/title.h>
+#include <sysapp/launch.h>
 
 MainWindow::MainWindow(int32_t w, int32_t h)
-        : width(w), height(h), gameClickSound(Resources::GetSound("game_click.mp3")), mainSwitchButtonFrame(nullptr), currentTvFrame(nullptr), currentDrcFrame(nullptr) {
+    : width(w), height(h), gameClickSound(Resources::GetSound("game_click.mp3")), mainSwitchButtonFrame(nullptr), currentTvFrame(nullptr), currentDrcFrame(nullptr) {
     for (int32_t i = 0; i < 4; i++) {
         std::string filename = StringTools::strfmt("player%i_point.png", i + 1);
-        pointerImgData[i] = Resources::GetImageData(filename.c_str());
-        pointerImg[i] = new GuiImage(pointerImgData[i]);
+        pointerImgData[i]    = Resources::GetImageData(filename.c_str());
+        pointerImg[i]        = new GuiImage(pointerImgData[i]);
         pointerImg[i]->setScale(1.5f);
         pointerValid[i] = false;
     }
@@ -43,7 +43,6 @@ MainWindow::MainWindow(int32_t w, int32_t h)
     gameList.titleUpdated.connect(this, &MainWindow::OnGameTitleUpdated);
     gameList.titleAdded.connect(this, &MainWindow::OnGameTitleAdded);
     AsyncExecutor::execute([&] { gameList.load(); });
-
 }
 
 MainWindow::~MainWindow() {
@@ -68,7 +67,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::updateEffects() {
     //! dont read behind the initial elements in case one was added
-    uint32_t tvSize = tvElements.size();
+    uint32_t tvSize  = tvElements.size();
     uint32_t drcSize = drcElements.size();
 
     for (uint32_t i = 0; (i < drcSize) && (i < drcElements.size()); ++i) {
@@ -90,7 +89,7 @@ void MainWindow::updateEffects() {
 
 void MainWindow::process() {
     //! dont read behind the initial elements in case one was added
-    uint32_t tvSize = tvElements.size();
+    uint32_t tvSize  = tvElements.size();
     uint32_t drcSize = drcElements.size();
 
     for (uint32_t i = 0; (i < drcSize) && (i < drcElements.size()); ++i) {
@@ -160,25 +159,25 @@ void MainWindow::update(GuiController *controller) {
         }
     }
 
-//    //! only update TV elements that are not updated yet because they are on DRC
-//    for(uint32_t i = 0; (i < tvSize) && (i < tvElements.size()); ++i)
-//    {
-//        uint32_t n;
-//        for(n = 0; (n < drcSize) && (n < drcElements.size()); n++)
-//        {
-//            if(tvElements[i] == drcElements[n])
-//                break;
-//        }
-//        if(n == drcElements.size())
-//        {
-//            tvElements[i]->update(controller);
-//        }
-//    }
+    //    //! only update TV elements that are not updated yet because they are on DRC
+    //    for(uint32_t i = 0; (i < tvSize) && (i < tvElements.size()); ++i)
+    //    {
+    //        uint32_t n;
+    //        for(n = 0; (n < drcSize) && (n < drcElements.size()); n++)
+    //        {
+    //            if(tvElements[i] == drcElements[n])
+    //                break;
+    //        }
+    //        if(n == drcElements.size())
+    //        {
+    //            tvElements[i]->update(controller);
+    //        }
+    //    }
 
     if (controller->chanIdx >= 1 && controller->chanIdx <= 4 && controller->data.validPointer) {
         int32_t wpadIdx = controller->chanIdx - 1;
-        float posX = controller->data.x;
-        float posY = controller->data.y;
+        float posX      = controller->data.x;
+        float posY      = controller->data.y;
         pointerImg[wpadIdx]->setPosition(posX, posY);
         pointerImg[wpadIdx]->setAngle(controller->data.pointerAngle);
         pointerValid[wpadIdx] = true;
@@ -312,8 +311,8 @@ void MainWindow::OnLayoutSwitchEffectFinish(GuiElement *element) {
     remove(currentTvFrame);
 
     GuiTitleBrowser *tmpElement = currentDrcFrame;
-    currentDrcFrame = currentTvFrame;
-    currentTvFrame = tmpElement;
+    currentDrcFrame             = currentTvFrame;
+    currentTvFrame              = tmpElement;
 
     appendTv(currentTvFrame);
     appendDrc(currentDrcFrame);
@@ -354,7 +353,6 @@ void MainWindow::OnCloseEffectFinish(GuiElement *element) {
 }
 
 void MainWindow::OnSettingsButtonClicked(GuiElement *element) {
-
 }
 
 void MainWindow::OnGameSelectionChange(GuiTitleBrowser *element, uint64_t selectedIdx) {
@@ -460,7 +458,7 @@ void MainWindow::OnGameLaunch(uint64_t titleId) {
 
     MCPTitleListType titleInfo;
     int32_t handle = MCP_Open();
-    auto err = MCP_GetTitleInfo(handle, titleId, &titleInfo);
+    auto err       = MCP_GetTitleInfo(handle, titleId, &titleInfo);
     MCP_Close(handle);
     if (err == 0) {
         ACPAssignTitlePatch(&titleInfo);

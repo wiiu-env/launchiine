@@ -1,8 +1,8 @@
 #pragma once
 
 #include "game/GameList.h"
-#include <gui/GuiImage.h>
 #include <gui/GuiFrame.h>
+#include <gui/GuiImage.h>
 
 class GameSplashScreen : public GuiFrame, public sigslot::has_slots<> {
 public:
@@ -15,11 +15,12 @@ public:
     void draw(CVideo *v) override;
 
     sigslot::signal3<GuiElement *, gameInfo *, bool> gameGameSplashScreenFinished;
+
 private:
     GuiImage bgImageColor;
     GuiImageData *splashScreenData = nullptr;
-    gameInfo *info = nullptr;
-    bool launchGame = false;
-    uint32_t frameCounter = 0;
-    bool onTV = false;
+    gameInfo *info                 = nullptr;
+    bool launchGame                = false;
+    uint32_t frameCounter          = 0;
+    bool onTV                      = false;
 };

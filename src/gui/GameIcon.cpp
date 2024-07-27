@@ -1,42 +1,42 @@
 #include "GameIcon.h"
-#include "GameIconModel.h"
 #include "Application.h"
+#include "GameIconModel.h"
+#include "utils/logger.h"
+#include "utils/utils.h"
 #include <video/CVideo.h>
 #include <video/shaders/Shader3D.h>
 #include <video/shaders/ShaderFractalColor.h>
-#include "utils/utils.h"
-#include "utils/logger.h"
 
 static const float cfIconMirrorScale = 1.15f;
 static const float cfIconMirrorAlpha = 0.45f;
 
 GameIcon::GameIcon(GuiImageData *preloadImage)
-        : GuiImage(preloadImage) {
-    bSelected = false;
-    bRenderStroke = true;
-    bRenderReflection = false;
-    bIconLast = false;
-    strokeFractalEnable = 1;
-    strokeBlurBorder = 0.0f;
-    distanceFadeout = 0.0f;
-    rotationX = 0.0f;
-    reflectionAlpha = 0.4f;
-    strokeWidth = 2.35f;
-    colorIntensity = glm::vec4(1.0f);
-    colorIntensityMirror = colorIntensity;
-    alphaFadeOutNorm = glm::vec4(0.0f);
-    alphaFadeOutRefl = glm::vec4(-1.0f, 0.0f, 0.9f, 1.0f);
+    : GuiImage(preloadImage) {
+    bSelected                        = false;
+    bRenderStroke                    = true;
+    bRenderReflection                = false;
+    bIconLast                        = false;
+    strokeFractalEnable              = 1;
+    strokeBlurBorder                 = 0.0f;
+    distanceFadeout                  = 0.0f;
+    rotationX                        = 0.0f;
+    reflectionAlpha                  = 0.4f;
+    strokeWidth                      = 2.35f;
+    colorIntensity                   = glm::vec4(1.0f);
+    colorIntensityMirror             = colorIntensity;
+    alphaFadeOutNorm                 = glm::vec4(0.0f);
+    alphaFadeOutRefl                 = glm::vec4(-1.0f, 0.0f, 0.9f, 1.0f);
     selectionBlurOuterColorIntensity = glm::vec4(0.09411764f * 1.15f, 0.56862745f * 1.15f, 0.96862745098f * 1.15f, 1.0f);
-    selectionBlurOuterSize = 1.65f;
-    selectionBlurOuterBorderSize = 0.5f;
+    selectionBlurOuterSize           = 1.65f;
+    selectionBlurOuterBorderSize     = 0.5f;
     selectionBlurInnerColorIntensity = glm::vec4(0.46666667f, 0.90588235f, 1.0f, 1.0f);
-    selectionBlurInnerSize = 1.45f;
-    selectionBlurInnerBorderSize = 0.95f;
+    selectionBlurInnerSize           = 1.45f;
+    selectionBlurInnerBorderSize     = 0.95f;
 
     vtxCount = sizeof(cfGameIconPosVtxs) / (Shader3D::cuVertexAttrSize);
 
     //! texture and vertex coordinates
-    posVtxs = (float *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, sizeof(cfGameIconPosVtxs));
+    posVtxs   = (float *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, sizeof(cfGameIconPosVtxs));
     texCoords = (float *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, sizeof(cfGameIconTexCoords));
 
     if (posVtxs) {
@@ -68,7 +68,7 @@ GameIcon::GameIcon(GuiImageData *preloadImage)
     strokeTexCoords = (float *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, cuGameIconStrokeVtxCount * Shader::cuTexCoordAttrSize);
     if (strokeTexCoords) {
         for (size_t i = 0, n = 0; i < cuGameIconStrokeVtxCount; n += 2, i += 3) {
-            strokeTexCoords[n] = (1.0f + strokePosVtxs[i]) * 0.5f;
+            strokeTexCoords[n]     = (1.0f + strokePosVtxs[i]) * 0.5f;
             strokeTexCoords[n + 1] = 1.0f - (1.0f + strokePosVtxs[i + 1]) * 0.5f;
         }
         GX2Invalidate(GX2_INVALIDATE_MODE_CPU_ATTRIBUTE_BUFFER, strokeTexCoords, cuGameIconStrokeVtxCount * Shader::cuTexCoordAttrSize);
@@ -118,9 +118,9 @@ bool GameIcon::checkRayIntersection(const glm::vec3 &rayOrigin, const glm::vec3 
     //! since we always face the camera we can just check the AABB intersection
     //! otherwise an OOB intersection would be required
 
-    float currPosX = getCenterX() * Application::instance()->getVideo()->getWidthScaleFactor() * 2.0f;
-    float currPosY = getCenterY() * Application::instance()->getVideo()->getHeightScaleFactor() * 2.0f;
-    float currPosZ = getDepth() * Application::instance()->getVideo()->getDepthScaleFactor() * 2.0f;
+    float currPosX   = getCenterX() * Application::instance()->getVideo()->getWidthScaleFactor() * 2.0f;
+    float currPosY   = getCenterY() * Application::instance()->getVideo()->getHeightScaleFactor() * 2.0f;
+    float currPosZ   = getDepth() * Application::instance()->getVideo()->getDepthScaleFactor() * 2.0f;
     float currScaleX = getScaleX() * (float) getWidth() * Application::instance()->getVideo()->getWidthScaleFactor();
     float currScaleY = getScaleY() * (float) getHeight() * Application::instance()->getVideo()->getHeightScaleFactor();
     float currScaleZ = getScaleZ() * (float) getWidth() * Application::instance()->getVideo()->getDepthScaleFactor();
@@ -159,12 +159,12 @@ void GameIcon::draw(CVideo *pVideo, const glm::mat4 &projectionMtx, const glm::m
         return;
     }
     //! first setup 2D GUI positions
-    float currPosX = getCenterX() * pVideo->getWidthScaleFactor() * 2.0f;
-    float currPosY = getCenterY() * pVideo->getHeightScaleFactor() * 2.0f;
-    float currPosZ = getDepth() * pVideo->getDepthScaleFactor() * 2.0f;
-    float currScaleX = getScaleX() * (float) getWidth() * pVideo->getWidthScaleFactor();
-    float currScaleY = getScaleY() * (float) getHeight() * pVideo->getHeightScaleFactor();
-    float currScaleZ = getScaleZ() * (float) getWidth() * pVideo->getDepthScaleFactor();
+    float currPosX     = getCenterX() * pVideo->getWidthScaleFactor() * 2.0f;
+    float currPosY     = getCenterY() * pVideo->getHeightScaleFactor() * 2.0f;
+    float currPosZ     = getDepth() * pVideo->getDepthScaleFactor() * 2.0f;
+    float currScaleX   = getScaleX() * (float) getWidth() * pVideo->getWidthScaleFactor();
+    float currScaleY   = getScaleY() * (float) getHeight() * pVideo->getHeightScaleFactor();
+    float currScaleZ   = getScaleZ() * (float) getWidth() * pVideo->getDepthScaleFactor();
     float strokeScaleX = pVideo->getWidthScaleFactor() * strokeWidth * 0.25f + cfIconMirrorScale;
     float strokeScaleY = pVideo->getHeightScaleFactor() * strokeWidth * 0.25f + cfIconMirrorScale;
 
@@ -182,10 +182,10 @@ void GameIcon::draw(CVideo *pVideo, const glm::mat4 &projectionMtx, const glm::m
             m_iconView = glm::rotate(m_iconView, DegToRad(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
             m_iconView = glm::scale(m_iconView, glm::vec3(currScaleX, -currScaleY, currScaleZ));
 
-            colorIntensity[3] = reflectionAlpha * getAlpha();
+            colorIntensity[3]                   = reflectionAlpha * getAlpha();
             selectionBlurOuterColorIntensity[3] = colorIntensity[3] * 0.7f;
             selectionBlurInnerColorIntensity[3] = colorIntensity[3] * 0.7f;
-            alphaFadeOut = &alphaFadeOutRefl;
+            alphaFadeOut                        = &alphaFadeOutRefl;
 
             GX2SetCullOnlyControl(GX2_FRONT_FACE_CCW, GX2_ENABLE, GX2_DISABLE);
         } else {
@@ -194,10 +194,10 @@ void GameIcon::draw(CVideo *pVideo, const glm::mat4 &projectionMtx, const glm::m
             m_iconView = glm::rotate(m_iconView, DegToRad(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
             m_iconView = glm::scale(m_iconView, glm::vec3(currScaleX, currScaleY, currScaleZ));
 
-            colorIntensity[3] = getAlpha();
+            colorIntensity[3]                   = getAlpha();
             selectionBlurOuterColorIntensity[3] = colorIntensity[3];
             selectionBlurInnerColorIntensity[3] = colorIntensity[3];
-            alphaFadeOut = &alphaFadeOutNorm;
+            alphaFadeOut                        = &alphaFadeOutNorm;
         }
 
         m_mirrorView = glm::scale(m_iconView, glm::vec3(cfIconMirrorScale, cfIconMirrorScale, cfIconMirrorScale));

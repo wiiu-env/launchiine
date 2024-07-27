@@ -26,8 +26,8 @@
 #include "fs/CFile.hpp"
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
-#include <sounds/OggDecoder.hpp>
 #include <malloc.h>
+#include <sounds/OggDecoder.hpp>
 #include <unistd.h>
 
 static int ogg_read(void *punt, int bytes, int blocks, int *f) {

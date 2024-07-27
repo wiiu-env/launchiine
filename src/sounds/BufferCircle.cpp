@@ -23,8 +23,8 @@
  *
  * for WiiXplorer 2010
  ***************************************************************************/
-#include <sounds/BufferCircle.hpp>
 #include <malloc.h>
+#include <sounds/BufferCircle.hpp>
 #include <utils/utils.h>
 
 BufferCircle::BufferCircle() {

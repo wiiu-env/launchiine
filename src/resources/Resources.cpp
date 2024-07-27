@@ -1,18 +1,18 @@
+#include "Resources.h"
+#include "filelist.h"
+#include "fs/FSUtils.h"
+#include "utils/AsyncExecutor.h"
+#include <gui/GuiImageData.h>
+#include <gui/GuiSound.h>
 #include <malloc.h>
 #include <string.h>
 #include <string>
-#include "Resources.h"
-#include "filelist.h"
-#include <gui/GuiSound.h>
-#include <gui/GuiImageData.h>
-#include "fs/FSUtils.h"
-#include "utils/AsyncExecutor.h"
 
 #include <chrono>
 #include <future>
 #include <iostream>
-#include <thread>
 #include <strings.h>
+#include <thread>
 
 
 Resources *Resources::instance = nullptr;
@@ -46,12 +46,12 @@ bool Resources::LoadFiles(const char *path) {
         fullpath += "/";
         fullpath += RecourceList[i].filename;
 
-        uint8_t *buffer = nullptr;
+        uint8_t *buffer   = nullptr;
         uint32_t filesize = 0;
 
         FSUtils::LoadFileToMem(fullpath.c_str(), &buffer, &filesize);
 
-        RecourceList[i].CustomFile = buffer;
+        RecourceList[i].CustomFile     = buffer;
         RecourceList[i].CustomFileSize = (uint32_t) filesize;
         result |= (buffer != 0);
     }
@@ -82,7 +82,7 @@ GuiImageData *Resources::GetImageData(const char *filename) {
     if (!instance)
         instance = new Resources;
 
-    std::map<std::string, std::pair<uint32_t, GuiImageData *> >::iterator itr = instance->imageDataMap.find(std::string(filename));
+    std::map<std::string, std::pair<uint32_t, GuiImageData *>>::iterator itr = instance->imageDataMap.find(std::string(filename));
     if (itr != instance->imageDataMap.end()) {
         itr->second.first++;
         return itr->second.second;
@@ -96,8 +96,8 @@ GuiImageData *Resources::GetImageData(const char *filename) {
             if (buff == nullptr)
                 return nullptr;
 
-            GuiImageData *image = new GuiImageData(buff, size);
-            instance->imageDataMap[std::string(filename)].first = 1;
+            GuiImageData *image                                  = new GuiImageData(buff, size);
+            instance->imageDataMap[std::string(filename)].first  = 1;
             instance->imageDataMap[std::string(filename)].second = image;
 
             return image;
@@ -108,7 +108,7 @@ GuiImageData *Resources::GetImageData(const char *filename) {
 }
 
 void Resources::RemoveImageData(GuiImageData *image) {
-    std::map<std::string, std::pair<uint32_t, GuiImageData *> >::iterator itr;
+    std::map<std::string, std::pair<uint32_t, GuiImageData *>>::iterator itr;
 
     for (itr = instance->imageDataMap.begin(); itr != instance->imageDataMap.end(); itr++) {
         if (itr->second.second == image) {
@@ -128,7 +128,7 @@ GuiSound *Resources::GetSound(const char *filename) {
     if (!instance)
         instance = new Resources;
 
-    std::map<std::string, std::pair<uint32_t, GuiSound *> >::iterator itr = instance->soundDataMap.find(std::string(filename));
+    std::map<std::string, std::pair<uint32_t, GuiSound *>>::iterator itr = instance->soundDataMap.find(std::string(filename));
     if (itr != instance->soundDataMap.end()) {
         itr->second.first++;
         return itr->second.second;
@@ -142,8 +142,8 @@ GuiSound *Resources::GetSound(const char *filename) {
             if (buff == nullptr)
                 return nullptr;
 
-            GuiSound *sound = new GuiSound(buff, size);
-            instance->soundDataMap[std::string(filename)].first = 1;
+            GuiSound *sound                                      = new GuiSound(buff, size);
+            instance->soundDataMap[std::string(filename)].first  = 1;
             instance->soundDataMap[std::string(filename)].second = sound;
 
             return sound;
@@ -154,7 +154,7 @@ GuiSound *Resources::GetSound(const char *filename) {
 }
 
 void Resources::RemoveSound(GuiSound *sound) {
-    std::map<std::string, std::pair<uint32_t, GuiSound *> >::iterator itr;
+    std::map<std::string, std::pair<uint32_t, GuiSound *>>::iterator itr;
 
     for (itr = instance->soundDataMap.begin(); itr != instance->soundDataMap.end(); itr++) {
         if (itr->second.second == sound) {

@@ -14,17 +14,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
+#include "system/memory.h"
 #include "utils/utils.h"
 #include <cstdint>
-#include "system/memory.h"
+#include <malloc.h>
+#include <string.h>
 #include <video/CVideo.h>
 #include <video/shaders/ColorShader.h>
 #include <video/shaders/FXAAShader.h>
 #include <video/shaders/Shader3D.h>
 #include <video/shaders/ShaderFractalColor.h>
 #include <video/shaders/Texture2DShader.h>
-#include <malloc.h>
-#include <string.h>
 
 CVideo::CVideo(int32_t forceTvScanMode, int32_t forceDrcScanMode) {
     tvEnabled  = false;

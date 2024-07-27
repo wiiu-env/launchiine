@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-#include <video/shaders/Shader3D.h>
 #include <malloc.h>
 #include <string.h>
+#include <video/shaders/Shader3D.h>
 
 static const uint32_t cpVertexShaderProgram[] = {
         0x00000000, 0x00008009, 0x20000000, 0x0000e4a1,

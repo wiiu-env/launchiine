@@ -11,7 +11,7 @@ public:
     virtual ~GameBgImage();
 
     void setAlphaFadeOut(const glm::vec4 &a) {
-       alphaFadeOut = a;
+        alphaFadeOut = a;
     }
 
     void draw(CVideo *pVideo) override;

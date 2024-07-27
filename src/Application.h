@@ -18,8 +18,8 @@
 #define _APPLICATION_H
 
 #include "menu/MainWindow.h"
-#include <video/CVideo.h>
 #include "system/CThread.h"
+#include <video/CVideo.h>
 
 // forward declaration
 class FreeTypeGX;
@@ -77,7 +77,6 @@ private:
     GuiController *controller[5]{};
     int exitCode;
     BOOL sFromHBL = FALSE;
-
 };
 
 #endif //_APPLICATION_H

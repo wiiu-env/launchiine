@@ -1,6 +1,6 @@
+#include "utils/logger.h"
 #include <cstdlib>
 #include <malloc.h>
-#include "utils/logger.h"
 
 #include "StorageUtils.h"
 

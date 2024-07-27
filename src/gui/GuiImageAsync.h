@@ -18,8 +18,8 @@
 #define _GUIIMAGEASYNC_H_
 
 #include <gui/GuiImage.h>
-#include <system/CThread.h>
 #include <mutex>
+#include <system/CThread.h>
 #include <vector>
 
 class GuiImageAsync : public GuiImage {

@@ -97,7 +97,7 @@ public:
     void resetState(void);
 
     //!Constantly called to draw the GuiButton
-    void draw(CVideo *video)  override;
+    void draw(CVideo *video) override;
 
     //!Constantly called to allow the GuiButton to respond to updated input data
     //!\param t Pointer to a GuiTrigger, containing the current input data from PAD/WPAD

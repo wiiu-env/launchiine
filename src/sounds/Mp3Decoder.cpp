@@ -26,10 +26,10 @@
 #include "fs/CFile.hpp"
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
-#include <sounds/Mp3Decoder.hpp>
 #include <limits.h>
 #include <malloc.h>
 #include <math.h>
+#include <sounds/Mp3Decoder.hpp>
 #include <string.h>
 #include <string>
 #include <unistd.h>

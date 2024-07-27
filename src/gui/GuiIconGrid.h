@@ -16,13 +16,13 @@
  ****************************************************************************/
 #pragma once
 
-#include <map>
-#include "gui/GuiTitleBrowser.h"
 #include "gui/GameIcon.h"
 #include "gui/GuiDragListener.h"
-#include <gui/GuiParticleImage.h>
+#include "gui/GuiTitleBrowser.h"
 #include "utils/AsyncExecutor.h"
 #include "utils/logger.h"
+#include <gui/GuiParticleImage.h>
+#include <map>
 
 class GuiIconGrid : public GuiTitleBrowser, public sigslot::has_slots<> {
 public:
@@ -131,17 +131,17 @@ private:
     int32_t currentLeftPosition;
     int32_t targetLeftPosition;
     uint32_t gameLaunchTimer;
-    bool bUpdatePositions = false;
-    GuiButton *currentlyHeld = nullptr;
+    bool bUpdatePositions         = false;
+    GuiButton *currentlyHeld      = nullptr;
     uint64_t currentlyHeldTitleId = 0;
     int32_t currentlyHeldPosition = -1;
-    GuiButton *dragTarget = nullptr;
+    GuiButton *dragTarget         = nullptr;
 
     class GameInfoContainer {
     public:
         GameInfoContainer(GuiButton *button, GameIcon *image, gameInfo *info) {
-            this->image = image;
-            this->info = info;
+            this->image  = image;
+            this->info   = info;
             this->button = button;
         }
 
@@ -173,6 +173,4 @@ private:
 
     std::vector<GuiImage *> emptyIcons;
     std::vector<GuiButton *> emptyButtons;
-
-
 };

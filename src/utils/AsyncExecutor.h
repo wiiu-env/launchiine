@@ -1,12 +1,12 @@
 #pragma once
 
-#include <vector>
-#include <future>
-#include <thread>
-#include <queue>
-#include <gui/GuiElement.h>
-#include <coreinit/cache.h>
 #include "utils/logger.h"
+#include <coreinit/cache.h>
+#include <future>
+#include <gui/GuiElement.h>
+#include <queue>
+#include <thread>
+#include <vector>
 
 class AsyncExecutor {
 public:

@@ -17,13 +17,13 @@
 #ifndef _MAIN_WINDOW_H_
 #define _MAIN_WINDOW_H_
 
-#include <vector>
-#include <queue>
-#include <gui/Gui.h>
-#include "game/GameList.h"
 #include "KeyboardHelper.h"
-#include "gui/GuiTitleBrowser.h"
 #include "MainDrcButtonsFrame.h"
+#include "game/GameList.h"
+#include "gui/GuiTitleBrowser.h"
+#include <gui/Gui.h>
+#include <queue>
+#include <vector>
 
 class CVideo;
 

@@ -24,12 +24,12 @@
  * for WiiXplorer 2010
  ***************************************************************************/
 #include <fs/CFile.hpp>
+#include <malloc.h>
+#include <sndcore2/core.h>
 #include <sounds/Mp3Decoder.hpp>
 #include <sounds/OggDecoder.hpp>
 #include <sounds/SoundHandler.hpp>
 #include <sounds/WavDecoder.hpp>
-#include <malloc.h>
-#include <sndcore2/core.h>
 #include <unistd.h>
 
 SoundHandler *SoundHandler::handlerInstance = NULL;
