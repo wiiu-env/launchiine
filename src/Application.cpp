@@ -34,6 +34,16 @@ Application::Application()
     bgMusic->Play();
     bgMusic->SetVolume(50);
 
+    //! create boot sound
+    std::string bootSoundPath = "fs:/path/to/bootSound.wav";
+    if (Resources::FileExists(bootSoundPath.c_str())) {
+        bootSound = new GuiSound(Resources::GetFile(bootSoundPath.c_str()), Resources::GetFileSize(bootSoundPath.c_str()));
+        bootSound->Play();
+        bootSound->SetVolume(50);
+    } else {
+        DEBUG_FUNCTION_LINE("Boot sound file not found: %s", bootSoundPath.c_str());
+    }
+
     AsyncExecutor::execute([] { DEBUG_FUNCTION_LINE("Hello"); });
 
     exitApplication = false;
@@ -44,6 +54,9 @@ Application::Application()
 Application::~Application() {
     DEBUG_FUNCTION_LINE("Destroy music");
     delete bgMusic;
+
+    DEBUG_FUNCTION_LINE("Destroy boot sound");
+    delete bootSound;
 
     DEBUG_FUNCTION_LINE("Destroy controller");
 
