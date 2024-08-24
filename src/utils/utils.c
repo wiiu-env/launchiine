@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 
 // https://gist.github.com/ccbrown/9722406
-bool LoadFileIntoBuffer(std::string_view path, std::vector<uint8_t> &buffer) {
+bool LoadFileIntoBuffer((std)::string_view path, std::vector<uint8_t> &buffer) {
     struct stat st {};
     if (stat(path.data(), &st) < 0 || !S_ISREG(st.st_mode)) {
         DEBUG_FUNCTION_LINE_WRITE("\"%s\" doesn't exists", path.data());

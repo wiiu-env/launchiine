@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <vector>
 #include <whb/log.h>
+#include <fstream>
 
 SplashSoundPlayer::SplashSoundPlayer(std::string_view meta_dir) {
     std::string bootSound = std::string(meta_dir).append("/bootSound.btsnd");
