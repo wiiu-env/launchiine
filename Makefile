@@ -8,6 +8,7 @@ endif
 
 TOPDIR ?= $(CURDIR)
 
+include $(DEVKITPRO)/wut/share/wut_rules
 
 #-------------------------------------------------------------------------------
 # TARGET is the name of the output
