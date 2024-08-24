@@ -1,16 +1,13 @@
 /****************************************************************************
  * Copyright (C) 2015 Dimok
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
@@ -401,9 +398,7 @@ void MainWindow::OnGameLaunchSplashScreenFinished(GuiElement *element, gameInfo 
     }
 }
 
-extern "C" int32_t SYSSwitchToBrowser(void *);
-extern "C" int32_t SYSSwitchToEShop(void *);
-extern "C" int32_t _SYSSwitchTo(uint32_t pfid);
+
 
 void MainWindow::OnGameLaunch(uint64_t titleId) {
     DEBUG_FUNCTION_LINE("Launch GAME!!");
@@ -434,28 +429,28 @@ void MainWindow::OnGameLaunch(uint64_t titleId) {
         titleId == 0x000500301001810AL ||
         titleId == 0x000500301001820AL) {
         DEBUG_FUNCTION_LINE("Launching the Download Management");
-        _SYSSwitchTo(12);
+        _SYSSwitchTo(SYSAPP_PFID_DOWNLOAD_MANAGEMENT);
         return;
     }
     if (titleId == 0x000500301001600AL ||
         titleId == 0x000500301001610AL ||
         titleId == 0x000500301001620AL) {
         DEBUG_FUNCTION_LINE("Launching Miiverse");
-        _SYSSwitchTo(9);
+        _SYSSwitchTo(SYSAPP_PFID_MIIVERSE);
         return;
     }
     if (titleId == 0x000500301001500AL ||
         titleId == 0x000500301001510AL ||
         titleId == 0x000500301001520AL) {
         DEBUG_FUNCTION_LINE("Launching Friendlist");
-        _SYSSwitchTo(11);
+        _SYSSwitchTo(SYSAPP_PFID_FRIENDLIST);
         return;
     }
     if (titleId == 0x000500301001300AL ||
         titleId == 0x000500301001310AL ||
         titleId == 0x000500301001320AL) {
         DEBUG_FUNCTION_LINE("Launching TVii");
-        _SYSSwitchTo(3);
+        _SYSSwitchTo(SYSAPP_PFID_TVII);
         return;
     }
 

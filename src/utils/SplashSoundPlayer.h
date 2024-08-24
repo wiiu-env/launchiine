@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <string_view>
 #include <vector>
-#include <SplashSoundPlayer.cpp>
 
 class SplashSoundPlayer {
 public:

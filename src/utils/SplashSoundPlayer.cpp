@@ -32,7 +32,7 @@ SplashSoundPlayer::SplashSoundPlayer(std::string_view meta_dir) {
 
 void SplashSoundPlayer::Play() {
     if (mBuffer.empty() || mBuffer.size() < 8) {
-        DEBUG_FUNCTION_LINE_WARN("mBuffer is empty or too small");
+        DEBUG_FUNCTION_LINE_WRITE("mBuffer is empty or too small");
         return;
     }
     AXTransitionAudioBuffer transitionAudioBuffer = {};
@@ -78,7 +78,7 @@ void SplashSoundPlayer::Play() {
     uint32_t audioBufferLen = 0;
     auto res                = __OSGetTransitionAudioBuffer(&audioBuffer, &audioBufferLen);
     if (res == 0) {
-        DEBUG_FUNCTION_LINE_ERR("Could not get access to audio buffer from foreground bucket");
+        DEBUG_FUNCTION_LINE_WRITE("Could not get access to audio buffer from foreground bucket");
         return;
     }
 
@@ -86,7 +86,7 @@ void SplashSoundPlayer::Play() {
 
     DEBUG_FUNCTION_LINE("Got audio buffer from foreground bucket @ %8.8x len = %d", audioBuffer, audioBufferLen);
     if (audioBufferLen < mBuffer.size()) {
-        DEBUG_FUNCTION_LINE_ERR("buffer not big enough");
+        DEBUG_FUNCTION_LINE_WRITE("buffer not big enough");
         return;
     }
 
