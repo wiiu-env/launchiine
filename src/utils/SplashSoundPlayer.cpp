@@ -1,6 +1,7 @@
 #include "SplashSoundPlayer.h"
 #include "logger.h"
 #include "utils.h"
+#include "utils.c"
 #include <coreinit/transition.h>
 #include <cstring>
 #include <sndcore2/core.h>
