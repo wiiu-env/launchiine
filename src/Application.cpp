@@ -13,6 +13,7 @@
 #include <gui/memory.h>
 #include <gui/sounds/SoundHandler.hpp>
 #include <proc_ui/procui.h>
+#include <sysapp/switch.h>
 #include <sysapp/launch.h>
 #include <thread>
 

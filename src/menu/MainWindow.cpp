@@ -24,6 +24,7 @@
 #include <coreinit/title.h>
 #include <future>
 #include <nn/acp/title.h>
+#include <sysapp/args.h>
 #include <sysapp/launch.h>
 #include <sysapp/switch.h>
 
@@ -423,7 +424,6 @@ void MainWindow::OnGameLaunch(uint64_t titleId) {
         titleId == 0x000500301001420AL) {
         DEBUG_FUNCTION_LINE("Launching the Eshop");
         SYSSwitchToEShop(nullptr);
-
         return;
     }
     if (titleId == 0x000500301001800AL ||

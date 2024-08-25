@@ -32,7 +32,7 @@ DATA		:=	data \
 				data/images \
 				data/sounds \
 				data/fonts
-INCLUDES	:=	src /workspaces/libgui/source     
+INCLUDES	:=	src /workspaces/libgui/source  
 
 #-------------------------------------------------------------------------------
 # options for code generation
