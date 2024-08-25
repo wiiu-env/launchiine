@@ -25,6 +25,7 @@
 #include <future>
 #include <nn/acp/title.h>
 #include <sysapp/launch.h>
+#include <sysapp/switch.h>
 
 MainWindow::MainWindow(int32_t w, int32_t h)
     : width(w), height(h), gameClickSound(Resources::GetSound("game_click.mp3")), mainSwitchButtonFrame(nullptr), currentTvFrame(nullptr), currentDrcFrame(nullptr) {
