@@ -28,9 +28,11 @@
 
 #include <vector>
 
+#include <array>
 #include <sndcore2/voice.h>
 #include <sounds/SoundDecoder.hpp>
 #include <sounds/Voice.h>
+#include <span>
 #include <system/CThread.h>
 
 #define MAX_DECODERS 16 // can be increased up to 96
@@ -46,53 +48,49 @@ public:
 
     static void DestroyInstance() {
         delete handlerInstance;
-        handlerInstance = NULL;
+        handlerInstance = nullptr;
     }
 
-    void AddDecoder(int32_t voice, const char *filepath);
-
-    void AddDecoder(int32_t voice, const uint8_t *snd, int32_t len);
+    void AddDecoder(int32_t voice, std::span<uint8_t> snd);
 
     void RemoveDecoder(int32_t voice);
 
     SoundDecoder *getDecoder(int32_t i) {
-        return ((i < 0 || i >= MAX_DECODERS) ? NULL : DecoderList[i]);
+        return ((i < 0 || i >= MAX_DECODERS) ? nullptr : DecoderList[i].get());
     };
 
-    Voice *getVoice(int32_t i) {
-        return ((i < 0 || i >= MAX_DECODERS) ? NULL : voiceList[i]);
+    Voice* getVoice(int32_t i) {
+        return ((i < 0 || i >= MAX_DECODERS) ? nullptr : voiceList[i].get());
     };
 
     void ThreadSignal() {
         resumeThread();
     };
 
-    bool IsDecoding() {
+    [[nodiscard]] bool IsDecoding() const {
         return Decoding;
     };
 
 protected:
     SoundHandler();
 
-    ~SoundHandler();
+    ~SoundHandler() override;
 
-    static void axFrameCallback(void);
+    static void axFrameCallback();
 
-    void executeThread(void);
+    void executeThread() override;
 
     void ClearDecoderList();
 
-    SoundDecoder *GetSoundDecoder(const char *filepath);
-
-    SoundDecoder *GetSoundDecoder(const uint8_t *sound, int32_t length);
+    std::unique_ptr<SoundDecoder> GetSoundDecoder(std::span<uint8_t> snd);
 
     static SoundHandler *handlerInstance;
 
     bool Decoding;
     bool ExitRequested;
 
-    Voice *voiceList[MAX_DECODERS];
-    SoundDecoder *DecoderList[MAX_DECODERS];
+    std::array<std::unique_ptr<Voice>, MAX_DECODERS> voiceList;
+    std::array<std::unique_ptr<SoundDecoder>, MAX_DECODERS> DecoderList;
 };
 
 #endif

@@ -16,26 +16,16 @@
  ****************************************************************************/
 #include <gui/GuiFrame.h>
 
-GuiFrame::GuiFrame(GuiFrame *p) {
-    parent = p;
+GuiFrame::GuiFrame() {
     width  = 0;
     height = 0;
     dim    = false;
-
-    if (parent) {
-        parent->append(this);
-    }
 }
 
-GuiFrame::GuiFrame(float w, float h, GuiFrame *p) {
-    parent = p;
+GuiFrame::GuiFrame(float w, float h) {
     width  = w;
     height = h;
     dim    = false;
-
-    if (parent) {
-        parent->append(this);
-    }
 }
 
 GuiFrame::~GuiFrame() {
@@ -46,38 +36,36 @@ GuiFrame::~GuiFrame() {
     }
 }
 
-void GuiFrame::append(GuiElement *e) {
-    if (e == NULL) {
+void GuiFrame::append(std::unique_ptr<GuiElement> e) {
+    if (e == nullptr) {
         return;
     }
 
-    remove(e);
     mutex.lock();
-    elements.push_back(e);
+    elements.push_back(std::move(e));
     e->setParent(this);
     mutex.unlock();
 }
 
-void GuiFrame::insert(GuiElement *e, uint32_t index) {
+void GuiFrame::insert(std::unique_ptr<GuiElement> e, uint32_t index) {
     if (e == NULL || (index >= elements.size())) {
         return;
     }
 
-    remove(e);
     mutex.lock();
-    elements.insert(elements.begin() + index, e);
+    elements.insert(elements.begin() + index, std::move(e));
     e->setParent(this);
     mutex.unlock();
 }
 
 void GuiFrame::remove(GuiElement *e) {
-    if (e == NULL) {
+    if (e == nullptr) {
         return;
     }
 
     mutex.lock();
     for (uint32_t i = 0; i < elements.size(); ++i) {
-        if (e == elements[i]) {
+        if (e == elements[i].get()) {
             elements.erase(elements.begin() + i);
             break;
         }
@@ -91,32 +79,17 @@ void GuiFrame::removeAll() {
     mutex.unlock();
 }
 
-void GuiFrame::close() {
-    //Application::instance()->pushForDelete(this);
-}
 
 void GuiFrame::dimBackground(bool d) {
     dim = d;
-}
-
-GuiElement *GuiFrame::getGuiElementAt(uint32_t index) const {
-    if (index >= elements.size()) {
-        return NULL;
-    }
-
-    return elements[index];
-}
-
-uint32_t GuiFrame::getSize() {
-    return elements.size();
 }
 
 void GuiFrame::resetState() {
     GuiElement::resetState();
 
     mutex.lock();
-    for (uint32_t i = 0; i < elements.size(); ++i) {
-        elements[i]->resetState();
+    for (const auto &element : elements) {
+        element->resetState();
     }
     mutex.unlock();
 }
@@ -124,8 +97,8 @@ void GuiFrame::resetState() {
 void GuiFrame::setState(int32_t s, int32_t c) {
     GuiElement::setState(s, c);
     mutex.lock();
-    for (uint32_t i = 0; i < elements.size(); ++i) {
-        elements[i]->setState(s, c);
+    for (const auto &element : elements) {
+        element->setState(s, c);
     }
     mutex.unlock();
 }
@@ -134,8 +107,8 @@ void GuiFrame::clearState(int32_t s, int32_t c) {
     GuiElement::clearState(s, c);
 
     mutex.lock();
-    for (uint32_t i = 0; i < elements.size(); ++i) {
-        elements[i]->clearState(s, c);
+    for (const auto &element : elements) {
+        element->clearState(s, c);
     }
     mutex.unlock();
 }
@@ -144,8 +117,8 @@ void GuiFrame::setVisible(bool v) {
     visible = v;
 
     mutex.lock();
-    for (uint32_t i = 0; i < elements.size(); ++i) {
-        elements[i]->setVisible(v);
+    for (const auto &element : elements) {
+        element->setVisible(v);
     }
     mutex.unlock();
 }
@@ -164,7 +137,7 @@ int32_t GuiFrame::getSelected() {
     return found;
 }
 
-void GuiFrame::draw(CVideo *v) {
+void GuiFrame::draw(const CVideo &v) {
     if (!this->isVisible() && parentElement) {
         return;
     }
@@ -218,7 +191,7 @@ void GuiFrame::process() {
     mutex.unlock();
 }
 
-void GuiFrame::update(GuiController *c) {
+void GuiFrame::update(const GuiController &c) {
     if (isStateSet(STATE_DISABLED) && parentElement) {
         return;
     }

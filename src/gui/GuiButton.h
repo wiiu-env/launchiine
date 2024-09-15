@@ -34,27 +34,27 @@ public:
     GuiButton(float w, float h);
 
     //!Destructor
-    virtual ~GuiButton();
+    ~GuiButton() override;
 
     //!Sets the button's image
     //!\param i Pointer to GuiImage object
-    void setImage(GuiImage *i);
+    void setImage(std::shared_ptr<GuiImage> i);
 
     //!Sets the button's image on over
     //!\param i Pointer to GuiImage object
-    void setImageOver(GuiImage *i);
+    void setImageOver(std::shared_ptr<GuiImage> i);
 
-    void setIcon(GuiImage *i);
+    void setIcon(std::shared_ptr<GuiImage> i);
 
-    void setIconOver(GuiImage *i);
+    void setIconOver(std::shared_ptr<GuiImage> i);
 
     //!Sets the button's image on hold
     //!\param i Pointer to GuiImage object
-    void setImageHold(GuiImage *i);
+    void setImageHold(std::shared_ptr<GuiImage> i);
 
     //!Sets the button's image on click
     //!\param i Pointer to GuiImage object
-    void setImageClick(GuiImage *i);
+    void setImageClick(std::shared_ptr<GuiImage> i);
 
     //!Sets the button's label
     //!\param t Pointer to GuiText object
@@ -78,15 +78,15 @@ public:
 
     //!Sets the sound to play on over
     //!\param s Pointer to GuiSound object
-    void setSoundOver(GuiSound *s);
+    void setSoundOver(std::unique_ptr<GuiSound> s);
 
     //!Sets the sound to play on hold
     //!\param s Pointer to GuiSound object
-    void setSoundHold(GuiSound *s);
+    void setSoundHold(std::unique_ptr<GuiSound> s);
 
     //!Sets the sound to play on click
     //!\param s Pointer to GuiSound object
-    void setSoundClick(GuiSound *s);
+    void setSoundClick(std::unique_ptr<GuiSound> &&s);
 
     //!Set a new GuiTrigger for the element
     //!\param i Index of trigger array to set
@@ -94,14 +94,14 @@ public:
     void setTrigger(GuiTrigger *t, int32_t idx = -1);
 
     //!
-    void resetState(void);
+    void resetState();
 
     //!Constantly called to draw the GuiButton
-    void draw(CVideo *video) override;
+    void draw(const CVideo& video) override;
 
     //!Constantly called to allow the GuiButton to respond to updated input data
     //!\param t Pointer to a GuiTrigger, containing the current input data from PAD/WPAD
-    void update(GuiController *c);
+    void update(const GuiController& c) override;
 
     sigslot::signal2<GuiButton *, const GuiController *> selected;
     sigslot::signal2<GuiButton *, const GuiController *> deSelected;
@@ -114,19 +114,19 @@ public:
 protected:
     static const int32_t iMaxGuiTriggers = 10;
 
-    GuiImage *image;      //!< Button image (default)
-    GuiImage *imageOver;  //!< Button image for STATE_SELECTED
-    GuiImage *imageHold;  //!< Button image for STATE_HELD
-    GuiImage *imageClick; //!< Button image for STATE_CLICKED
-    GuiImage *icon;
-    GuiImage *iconOver;
-    GuiText *label[4];                    //!< Label(s) to display (default)
+    std::unique_ptr<GuiImage> image;      //!< Button image (default)
+    std::unique_ptr<GuiImage> imageOver;  //!< Button image for STATE_SELECTED
+    std::unique_ptr<GuiImage> imageHold;  //!< Button image for STATE_HELD
+    std::unique_ptr<GuiImage> imageClick; //!< Button image for STATE_CLICKED
+    std::unique_ptr<GuiImage> icon;
+    std::unique_ptr<GuiImage> iconOver;
+    std::array<std::unique_ptr<GuiText>,4> label[4];                    //!< Label(s) to display (default)
     GuiText *labelOver[4];                //!< Label(s) to display for STATE_SELECTED
     GuiText *labelHold[4];                //!< Label(s) to display for STATE_HELD
     GuiText *labelClick[4];               //!< Label(s) to display for STATE_CLICKED
-    GuiSound *soundOver;                  //!< Sound to play for STATE_SELECTED
-    GuiSound *soundHold;                  //!< Sound to play for STATE_HELD
-    GuiSound *soundClick;                 //!< Sound to play for STATE_CLICKED
+    std::unique_ptr<GuiSound> soundOver;  //!< Sound to play for STATE_SELECTED
+    std::unique_ptr<GuiSound> soundHold;  //!< Sound to play for STATE_HELD
+    std::unique_ptr<GuiSound> soundClick; //!< Sound to play for STATE_CLICKED
     GuiTrigger *trigger[iMaxGuiTriggers]; //!< GuiTriggers (input actions) that this element responds to
     GuiTrigger *clickedTrigger;
     GuiTrigger *heldTrigger;

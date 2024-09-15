@@ -78,7 +78,7 @@ public:
 
     //!Set the element's parent
     //!\param e Pointer to parent element
-    virtual void setParent(GuiElement *e) {
+    virtual void setParent(std::shared_ptr<GuiElement> e) {
         parentElement = e;
     }
 
@@ -524,10 +524,10 @@ public:
 
     //!Called constantly to allow the element to respond to the current input data
     //!\param t Pointer to a GuiController, containing the current input data from PAD/WPAD/VPAD
-    virtual void update(GuiController *t) {}
+    virtual void update(const GuiController &t) {}
 
     //!Called constantly to redraw the element
-    virtual void draw(CVideo *v) {}
+    virtual void draw(const CVideo &v) {}
 
     //!Called constantly to process stuff in the element
     virtual void process() {}
@@ -579,8 +579,8 @@ protected:
     bool clickable;                //!< Whether or not this element is clickable (can change to CLICKED state)
     bool holdable;                 //!< Whether or not this element is holdable (can change to HELD state)
     bool drawOverOnlyWhenSelected; //!< Whether or not this element is holdable (can change to HELD state)
-    float width;                   //!< Element width
-    float height;                  //!< Element height
+    float width  = {};             //!< Element width
+    float height = {};             //!< Element height
     float xoffset;                 //!< Element X offset
     float yoffset;                 //!< Element Y offset
     float zoffset;                 //!< Element Z offset
@@ -590,7 +590,7 @@ protected:
     float scaleY;                  //!< Element scale (1 = 100%)
     float scaleZ;                  //!< Element scale (1 = 100%)
     int32_t alignment;             //!< Horizontal element alignment, respective to parent element
-    int32_t state[5];              //!< Element state (DEFAULT, SELECTED, CLICKED, DISABLED)
+    int32_t state[5]{};            //!< Element state (DEFAULT, SELECTED, CLICKED, DISABLED)
     int32_t stateChan;             //!< Which controller channel is responsible for the last change in state
     GuiElement *parentElement;     //!< Parent element
 

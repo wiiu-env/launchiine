@@ -19,6 +19,7 @@
 
 #include <gui/GuiElement.h>
 #include <gui/sigslot.h>
+#include <memory>
 #include <mutex>
 #include <vector>
 
@@ -26,28 +27,26 @@
 class GuiFrame : public GuiElement {
 public:
     //!Constructor
-    GuiFrame(GuiFrame *parent = 0);
+    GuiFrame();
 
     //!\overload
     //!\param w Width of window
     //!\param h Height of window
-    GuiFrame(float w, float h, GuiFrame *parent = 0);
+    GuiFrame(float w, float h);
 
     //!Destructor
-    virtual ~GuiFrame();
+    ~GuiFrame() override;
 
     //!Appends a GuiElement to the GuiFrame
     //!\param e The GuiElement to append. If it is already in the GuiFrame, it is removed first
-    void append(GuiElement *e);
+    void append(std::unique_ptr<GuiElement> e);
 
     //!Inserts a GuiElement into the GuiFrame at the specified index
     //!\param e The GuiElement to insert. If it is already in the GuiFrame, it is removed first
     //!\param i Index in which to insert the element
-    void insert(GuiElement *e, uint32_t i);
+    void insert(std::unique_ptr<GuiElement>, uint32_t i);
 
-    //!Removes the specified GuiElement from the GuiFrame
-    //!\param e GuiElement to be removed
-    void remove(GuiElement *e);
+
 
     //!Removes all GuiElements
     void removeAll();
@@ -58,70 +57,54 @@ public:
         append(e);
     }
 
-    //!Returns the GuiElement at the specified index
-    //!\param index The index of the element
-    //!\return A pointer to the element at the index, NULL on error (eg: out of bounds)
-    GuiElement *getGuiElementAt(uint32_t index) const;
-
-    //!Returns the size of the list of elements
-    //!\return The size of the current element list
-    uint32_t getSize();
 
     //!Sets the visibility of the window
     //!\param v visibility (true = visible)
-    void setVisible(bool v);
+    void setVisible(bool v) override;
 
     //!Resets the window's state to STATE_DEFAULT
-    void resetState();
+    void resetState() override;
 
     //!Sets the window's state
     //!\param s State
-    void setState(int32_t s, int32_t c = -1);
+    void setState(int32_t s, int32_t c = -1) override;
 
-    void clearState(int32_t s, int32_t c = -1);
+    void clearState(int32_t s, int32_t c = -1) override;
 
     //!Gets the index of the GuiElement inside the window that is currently selected
     //!\return index of selected GuiElement
-    int32_t getSelected();
+    int32_t getSelected() override;
 
     //!Dim the Window's background
     void dimBackground(bool d);
 
     //!Draws all the elements in this GuiFrame
-    void draw(CVideo *v) override;
+    void draw(const CVideo& v) override;
 
     //!Updates the window and all elements contains within
     //!Allows the GuiFrame and all elements to respond to the input data specified
     //!\param t Pointer to a GuiTrigger, containing the current input data from PAD/WPAD
-    void update(GuiController *t);
-
-    //!virtual Close Window - this will put the object on the delete queue in MainWindow
-    virtual void close();
-
-    //!virtual show window function
-    virtual void show() {}
-
-    //!virtual hide window function
-    virtual void hide() {}
-
-    //!virtual enter main loop function (blocking)
-    virtual void exec() {}
+    void update(const GuiController& t);
 
     //!virtual updateEffects which is called by the main loop
-    virtual void updateEffects();
+    void updateEffects() override;
 
     //!virtual process which is called by the main loop
-    virtual void process();
+    void process() override;
 
     //! Signals
     //! On Closing
     sigslot::signal1<GuiFrame *> closing;
 
 protected:
-    bool dim;                           //! Enable/disable dim of a window only
-    GuiFrame *parent;                   //!< Parent Window
-    std::vector<GuiElement *> elements; //!< Contains all elements within the GuiFrame
+    //!Removes the specified GuiElement from the GuiFrame
+    void remove(GuiElement *e);
+
+    bool dim;                                          //! Enable/disable dim of a window only
+    GuiFrame *parent;                                  //!< Parent Window
+    std::vector<std::unique_ptr<GuiElement>> elements; //!< Contains all elements within the GuiFrame
     std::recursive_mutex mutex;
+
 };
 
 #endif

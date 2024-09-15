@@ -101,7 +101,7 @@ static const uint32_t cpPixelShaderRegs[] = {
         0x00000000, 0x0000000f, 0x00000001, 0x00000010,
         0x00000000};
 
-ColorShader *ColorShader::shaderInstance = NULL;
+ColorShader *ColorShader::shaderInstance = nullptr;
 
 ColorShader::ColorShader()
     : vertexShader(cuAttributeCount) {

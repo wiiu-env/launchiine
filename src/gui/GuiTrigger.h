@@ -94,31 +94,31 @@ public:
         bSelectionClickEverywhere = b;
     }
 
-    bool isClickEverywhere() const {
+    [[nodiscard]] bool isClickEverywhere() const {
         return bClickEverywhere;
     }
 
-    bool isHoldEverywhere() const {
+    [[nodiscard]] bool isHoldEverywhere() const {
         return bHoldEverywhere;
     }
 
-    bool isSelectionClickEverywhere() const {
+    [[nodiscard]] bool isSelectionClickEverywhere() const {
         return bSelectionClickEverywhere;
     }
 
-    bool left(const GuiController *controller) const;
+    [[nodiscard]] bool left(const GuiController &controller) const;
 
-    bool right(const GuiController *controller) const;
+    [[nodiscard]] bool right(const GuiController &controller) const;
 
-    bool up(const GuiController *controller) const;
+    [[nodiscard]] bool up(const GuiController &controller) const;
 
-    bool down(const GuiController *controller) const;
+    [[nodiscard]] bool down(const GuiController &controller) const;
 
-    int32_t clicked(const GuiController *controller) const;
+    [[nodiscard]] int32_t clicked(const GuiController &controller) const;
 
-    bool held(const GuiController *controller) const;
+    [[nodiscard]] bool held(const GuiController &controller) const;
 
-    bool released(const GuiController *controller) const;
+    [[nodiscard]]  bool released(const GuiController &controller) const;
 
 private:
     uint32_t chan;

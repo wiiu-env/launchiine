@@ -16,26 +16,19 @@
  ****************************************************************************/
 #include "system/memory.h"
 #include <gui/GuiImageData.h>
-#include <malloc.h>
-#include <stdint.h>
-#include <string.h>
 
 /**
  * Constructor for the GuiImageData class.
  */
-GuiImageData::GuiImageData() {
-    texture    = NULL;
-    sampler    = NULL;
-    memoryType = eMemTypeMEM2;
-}
+GuiImageData::GuiImageData() = default;
 
 /**
  * Constructor for the GuiImageData class.
  */
-GuiImageData::GuiImageData(const uint8_t *img, int32_t imgSize, GX2TexClampMode textureClamp, GX2SurfaceFormat textureFormat) {
-    texture = NULL;
-    sampler = NULL;
-    loadImage(img, imgSize, textureClamp, textureFormat);
+GuiImageData::GuiImageData(std::span<const uint8_t> data, GX2TexClampMode textureClamp, GX2SurfaceFormat textureFormat) {
+    if (!loadImage(data, textureClamp, textureFormat)) {
+        releaseData();
+    }
 }
 
 /**
@@ -45,98 +38,61 @@ GuiImageData::~GuiImageData() {
     releaseData();
 }
 
-void GuiImageData::releaseData(void) {
-    if (texture) {
-        if (texture->surface.image) {
-            switch (memoryType) {
-                default:
-                case eMemTypeMEM2:
-                    free(texture->surface.image);
-                    break;
-                case eMemTypeMEM1:
-                    MEM1_free(texture->surface.image);
-                    break;
-                case eMemTypeMEMBucket:
-                    MEMBucket_free(texture->surface.image);
-                    break;
-            }
-        }
-        delete texture;
-        texture = NULL;
-    }
-    if (sampler) {
-        delete sampler;
-        sampler = NULL;
-    }
+void GuiImageData::releaseData() {
+    textureWrapper.reset();
+    sampler.reset();
 }
 
-void GuiImageData::loadImage(const uint8_t *img, int32_t imgSize, GX2TexClampMode textureClamp, GX2SurfaceFormat textureFormat) {
-    if (!img || (imgSize < 8)) {
-        return;
+bool GuiImageData::loadImage(std::span<const uint8_t> img, GX2TexClampMode textureClamp, GX2SurfaceFormat textureFormat) {
+    if (img.empty() || img.size() < 8) {
+        return false;
     }
 
     releaseData();
-    gdImagePtr gdImg = 0;
+    gdImagePtr gdImg = nullptr;
 
     if (img[0] == 0xFF && img[1] == 0xD8) {
         //! not needed for now therefore comment out to safe ELF size
         //! if needed uncomment, adds 200 kb to the ELF size
         // IMAGE_JPEG
-        gdImg = gdImageCreateFromJpegPtr(imgSize, (uint8_t *) img);
+        gdImg = gdImageCreateFromJpegPtr(img.size(), (void *) img.data());
     } else if (img[0] == 'B' && img[1] == 'M') {
         // IMAGE_BMP
-        gdImg = gdImageCreateFromBmpPtr(imgSize, (uint8_t *) img);
+        gdImg = gdImageCreateFromBmpPtr(img.size(), (void *) img.data());
     } else if (img[0] == 0x89 && img[1] == 'P' && img[2] == 'N' && img[3] == 'G') {
         // IMAGE_PNG
-        gdImg = gdImageCreateFromPngPtr(imgSize, (uint8_t *) img);
+        gdImg = gdImageCreateFromPngPtr(img.size(), (void *) img.data());
     }
     //!This must be last since it can also intefere with outher formats
     else if (img[0] == 0x00) {
         // Try loading TGA image
-        gdImg = gdImageCreateFromTgaPtr(imgSize, (uint8_t *) img);
+        gdImg = gdImageCreateFromTgaPtr(img.size(), (void *) img.data());
     }
 
-    if (gdImg == 0) {
-        return;
+    if (gdImg == nullptr) {
+        return false;
     }
 
     uint32_t width  = (gdImageSX(gdImg));
     uint32_t height = (gdImageSY(gdImg));
 
     //! Initialize texture
-    texture = new GX2Texture;
-    GX2InitTexture(texture, width, height, 1, 0, textureFormat, GX2_SURFACE_DIM_TEXTURE_2D, GX2_TILE_MODE_LINEAR_ALIGNED);
+    textureWrapper = std::make_unique<GX2TextureImageDataWrapper>();
+    if (!textureWrapper->InitTexture(width, height, textureFormat)) {
+        gdImageDestroy(gdImg);
+        return false;
+    }
+
+    GX2Texture *texture = textureWrapper->getTexture();
 
     //! if this fails something went horribly wrong
     if (texture->surface.imageSize == 0) {
-        delete texture;
-        texture = NULL;
         gdImageDestroy(gdImg);
-        return;
+        return false;
     }
 
-    //! allocate memory for the surface
-    memoryType             = eMemTypeMEM2;
-    texture->surface.image = memalign(texture->surface.alignment, texture->surface.imageSize);
-    //! try MEM1 on failure
-    if (!texture->surface.image) {
-        memoryType             = eMemTypeMEM1;
-        texture->surface.image = MEM1_alloc(texture->surface.imageSize, texture->surface.alignment);
-    }
-    //! try MEM bucket on failure
-    if (!texture->surface.image) {
-        memoryType             = eMemTypeMEMBucket;
-        texture->surface.image = MEMBucket_alloc(texture->surface.imageSize, texture->surface.alignment);
-    }
-    //! check if memory is available for image
-    if (!texture->surface.image) {
-        gdImageDestroy(gdImg);
-        delete texture;
-        texture = NULL;
-        return;
-    }
     //! set mip map data pointer
-    texture->surface.mipmaps = NULL;
+    texture->surface.mipmaps = nullptr;
     //! convert image to texture
     switch (textureFormat) {
         default:
@@ -154,8 +110,9 @@ void GuiImageData::loadImage(const uint8_t *img, int32_t imgSize, GX2TexClampMod
     //! invalidate the memory
     GX2Invalidate(GX2_INVALIDATE_MODE_CPU_TEXTURE, texture->surface.image, texture->surface.imageSize);
     //! initialize the sampler
-    sampler = new GX2Sampler;
-    GX2InitSampler(sampler, textureClamp, GX2_TEX_XY_FILTER_MODE_LINEAR);
+    sampler = std::make_unique<GX2Sampler>();
+    GX2InitSampler(sampler.get(), textureClamp, GX2_TEX_XY_FILTER_MODE_LINEAR);
+    return true;
 }
 
 void GuiImageData::gdImageToUnormR8G8B8A8(gdImagePtr gdImg, uint32_t *imgBuffer, uint32_t width, uint32_t height, uint32_t pitch) {

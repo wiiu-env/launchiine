@@ -19,7 +19,6 @@
 #include "gui/GameIcon.h"
 #include "gui/GuiDragListener.h"
 #include "gui/GuiTitleBrowser.h"
-#include "utils/AsyncExecutor.h"
 #include "utils/logger.h"
 #include <gui/GuiParticleImage.h>
 #include <map>

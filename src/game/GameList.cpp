@@ -8,7 +8,6 @@
 
 #include "GameList.h"
 #include "common/common.h"
-#include "utils/AsyncExecutor.h"
 
 #include "fs/FSUtils.h"
 #include "utils/logger.h"

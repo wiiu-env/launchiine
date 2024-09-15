@@ -28,33 +28,32 @@ static const uint32_t FixedPointShift = 15;
 static const uint32_t FixedPointScale = 1 << FixedPointShift;
 
 SoundDecoder::SoundDecoder() {
-    file_fd = NULL;
+    file_fd = nullptr;
     Init();
 }
 
 SoundDecoder::SoundDecoder(const std::string &filepath) {
-    file_fd = new CFile(filepath, CFile::ReadOnly);
+    file_fd = std::make_unique<CFile>(filepath, CFile::ReadOnly);
     Init();
 }
 
-SoundDecoder::SoundDecoder(const uint8_t *buffer, int32_t size) {
-    file_fd = new CFile(buffer, size);
+SoundDecoder::SoundDecoder(std::span<uint8_t> snd) {
+    file_fd = std::make_unique<CFile>(snd);
     Init();
 }
 
 SoundDecoder::~SoundDecoder() {
     ExitRequested = true;
-    while (Decoding)
+    while (Decoding) {
         OSSleepTicks(OSMicrosecondsToTicks(1000));
+    }
 
     //! lock unlock once to make sure it's really not decoding
     Lock();
     Unlock();
 
-    if (file_fd) {
-        delete file_fd;
-    }
-    file_fd = NULL;
+    file_fd.reset();
+
 
     if (ResampleBuffer) {
         free(ResampleBuffer);
@@ -62,6 +61,9 @@ SoundDecoder::~SoundDecoder() {
 }
 
 int32_t SoundDecoder::Seek(int32_t pos) {
+    if (!file_fd) {
+        return 0;
+    }
     CurPos = pos;
     return file_fd->seek(CurPos, SEEK_SET);
 }
@@ -79,11 +81,15 @@ void SoundDecoder::Init() {
     ExitRequested   = false;
     SoundBuffer.SetBufferBlockSize(SoundBlockSize);
     SoundBuffer.Resize(SoundBlocks);
-    ResampleBuffer = NULL;
+    ResampleBuffer = nullptr;
     ResampleRatio  = 0;
 }
 
 int32_t SoundDecoder::Rewind() {
+    if (!file_fd) {
+        return 0;
+    }
+
     CurPos    = 0;
     EndOfFile = false;
     file_fd->rewind();
@@ -92,14 +98,17 @@ int32_t SoundDecoder::Rewind() {
 }
 
 int32_t SoundDecoder::Read(uint8_t *buffer, int32_t buffer_size, int32_t pos) {
+    if (!file_fd) {
+        return 0;
+    }
     int32_t ret = file_fd->read(buffer, buffer_size);
     CurPos += ret;
 
     return ret;
 }
 
-void SoundDecoder::EnableUpsample(void) {
-    if ((ResampleBuffer == NULL) && IsStereo() && Is16Bit() && SampleRate != 32000 && SampleRate != 48000) {
+void SoundDecoder::EnableUpsample() {
+    if ((ResampleBuffer == nullptr) && IsStereo() && Is16Bit() && SampleRate != 32000 && SampleRate != 48000) {
         ResampleBuffer = (uint8_t *) memalign(32, SoundBlockSize);
         ResampleRatio  = (FixedPointScale * SampleRate) / 48000;
         SoundBlockSize = (SoundBlockSize * ResampleRatio) / FixedPointScale;

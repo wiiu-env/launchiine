@@ -26,34 +26,16 @@
 #include "fs/CFile.hpp"
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
-#include <limits.h>
+#include <climits>
 #include <malloc.h>
-#include <math.h>
 #include <sounds/Mp3Decoder.hpp>
-#include <string.h>
-#include <string>
+#include <cstring>
 #include <unistd.h>
 
-Mp3Decoder::Mp3Decoder(const char *filepath)
-    : SoundDecoder(filepath) {
+Mp3Decoder::Mp3Decoder(std::span<uint8_t> snd)
+    : SoundDecoder(snd) {
     SoundType  = SOUND_MP3;
-    ReadBuffer = NULL;
-    mad_timer_reset(&Timer);
-    mad_stream_init(&Stream);
-    mad_frame_init(&Frame);
-    mad_synth_init(&Synth);
-
-    if (!file_fd) {
-        return;
-    }
-
-    OpenFile();
-}
-
-Mp3Decoder::Mp3Decoder(const uint8_t *snd, int32_t len)
-    : SoundDecoder(snd, len) {
-    SoundType  = SOUND_MP3;
-    ReadBuffer = NULL;
+    ReadBuffer = nullptr;
     mad_timer_reset(&Timer);
     mad_stream_init(&Stream);
     mad_frame_init(&Frame);
@@ -78,17 +60,16 @@ Mp3Decoder::~Mp3Decoder() {
     if (ReadBuffer) {
         free(ReadBuffer);
     }
-    ReadBuffer = NULL;
+    ReadBuffer = nullptr;
 }
 
 void Mp3Decoder::OpenFile() {
-    GuardPtr   = NULL;
+    GuardPtr   = nullptr;
     ReadBuffer = (uint8_t *) memalign(32, SoundBlockSize * SoundBlocks);
     if (!ReadBuffer) {
         if (file_fd) {
-            delete file_fd;
+            file_fd.reset();
         }
-        file_fd = NULL;
         return;
     }
 
@@ -96,9 +77,8 @@ void Mp3Decoder::OpenFile() {
     int32_t ret = Read(dummybuff, 4096, 0);
     if (ret <= 0) {
         if (file_fd) {
-            delete file_fd;
+            file_fd.reset();
         }
-        file_fd = NULL;
         return;
     }
 
@@ -116,7 +96,7 @@ int32_t Mp3Decoder::Rewind() {
     mad_frame_init(&Frame);
     mad_synth_init(&Synth);
     SynthPos = 0;
-    GuardPtr = NULL;
+    GuardPtr = nullptr;
 
     if (!file_fd) {
         return -1;
@@ -152,7 +132,7 @@ int32_t Mp3Decoder::Read(uint8_t *buffer, int32_t buffer_size, int32_t pos) {
     uint8_t *write_pos = buffer;
     uint8_t *write_end = buffer + buffer_size;
 
-    while (1) {
+    while (true) {
         while (SynthPos < Synth.pcm.length) {
             if (write_pos >= write_end) {
                 return write_pos - buffer;

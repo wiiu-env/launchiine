@@ -36,9 +36,8 @@ public:
         if (fetchShaderProgramm) {
             free(fetchShaderProgramm);
         }
-        if (fetchShader) {
-            delete fetchShader;
-        }
+
+        delete fetchShader;
     }
 
     GX2FetchShader *getFetchShader() const {

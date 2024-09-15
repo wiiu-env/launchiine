@@ -21,6 +21,8 @@
 #include <gui/GuiElement.h>
 #include <gui/gx2_ext.h>
 #include <gx2/texture.h>
+#include <memory>
+#include <span>
 
 class GuiImageData : public GuiElement {
 public:
@@ -29,30 +31,33 @@ public:
 
     //!\param img Image data
     //!\param imgSize The image size
-    GuiImageData(const uint8_t *img, int32_t imgSize, GX2TexClampMode textureClamp = GX2_TEX_CLAMP_MODE_CLAMP, GX2SurfaceFormat textureFormat = GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+     explicit GuiImageData(std::span<const uint8_t> img, GX2TexClampMode textureClamp = GX2_TEX_CLAMP_MODE_CLAMP, GX2SurfaceFormat textureFormat = GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
 
     //!Destructor
-    virtual ~GuiImageData();
+    ~GuiImageData() override;
 
     //!Load image from buffer
     //!\param img Image data
     //!\param imgSize The image size
-    void loadImage(const uint8_t *img, int32_t imgSize, GX2TexClampMode textureClamp = GX2_TEX_CLAMP_MODE_CLAMP, GX2SurfaceFormat textureFormat = GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
+    bool loadImage(std::span<const uint8_t> img, GX2TexClampMode textureClamp = GX2_TEX_CLAMP_MODE_CLAMP, GX2SurfaceFormat textureFormat = GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8);
 
     //! getter functions
-    virtual const GX2Texture *getTexture() const {
-        return texture;
+    [[nodiscard]] virtual const GX2Texture *getTexture() const {
+        if (!textureWrapper) {
+            return nullptr;
+        }
+        return textureWrapper->getTexture();
     };
 
-    virtual const GX2Sampler *getSampler() const {
-        return sampler;
+    [[nodiscard]] virtual const GX2Sampler *getSampler() const {
+        return sampler.get();
     };
 
     //!Gets the image width
     //!\return image width
     float getWidth() override {
-        if (texture) {
-            return texture->surface.width;
+        if (textureWrapper) {
+            return textureWrapper->getTexture()->surface.width;
         } else {
             return 0;
         }
@@ -61,8 +66,8 @@ public:
     //!Gets the image height
     //!\return image height
     float getHeight() override {
-        if (texture) {
-            return texture->surface.height;
+        if (textureWrapper) {
+            return textureWrapper->getTexture()->surface.height;
         } else {
             return 0;
         }
@@ -72,20 +77,69 @@ public:
     void releaseData();
 
 private:
+    class GX2TextureImageDataWrapper {
+    public:
+        [[nodiscard]] GX2Texture *getTexture() {
+            return &texture;
+        }
+
+        bool InitTexture(uint32_t width, uint32_t height, GX2SurfaceFormat textureFormat) {
+            GX2InitTexture(&texture, width, height, 1, 0, textureFormat, GX2_SURFACE_DIM_TEXTURE_2D, GX2_TILE_MODE_LINEAR_ALIGNED);
+
+            //! allocate memory for the surface
+            memoryType            = MEM2;
+            texture.surface.image = MEM2_alloc(texture.surface.alignment, texture.surface.imageSize);
+            //! try MEM1 on failure
+            if (!texture.surface.image) {
+                memoryType            = MEM1;
+                texture.surface.image = MEM1_alloc(texture.surface.imageSize, texture.surface.alignment);
+            }
+            //! try MEM bucket on failure
+            if (!texture.surface.image) {
+                memoryType            = MEM_BUCKET;
+                texture.surface.image = MEMBucket_alloc(texture.surface.imageSize, texture.surface.alignment);
+            }
+            //! check if memory is available for image
+            if (!texture.surface.image) {
+                return false;
+            }
+            return true;
+        }
+
+        ~GX2TextureImageDataWrapper() {
+            if (texture.surface.image) {
+                switch (memoryType) {
+                    default:
+                    case MEM2:
+                        MEM2_free(texture.surface.image);
+                        break;
+                    case MEM1:
+                        MEM1_free(texture.surface.image);
+                        break;
+                    case MEM_BUCKET:
+                        MEMBucket_free(texture.surface.image);
+                        break;
+                }
+            }
+        }
+
+        enum MemoryType {
+            MEM1,
+            MEM2,
+            MEM_BUCKET
+        };
+
+    private:
+        alignas(0x40) GX2Texture texture;
+        MemoryType memoryType;
+    };
+
     void gdImageToUnormR8G8B8A8(gdImagePtr gdImg, uint32_t *imgBuffer, uint32_t width, uint32_t height, uint32_t pitch);
 
     void gdImageToUnormR5G6B5(gdImagePtr gdImg, uint16_t *imgBuffer, uint32_t width, uint32_t height, uint32_t pitch);
 
-    GX2Texture *texture;
-    GX2Sampler *sampler;
-
-    enum eMemoryTypes {
-        eMemTypeMEM2,
-        eMemTypeMEM1,
-        eMemTypeMEMBucket
-    };
-
-    uint8_t memoryType;
+    std::unique_ptr<GX2TextureImageDataWrapper> textureWrapper;
+    std::unique_ptr<GX2Sampler> sampler;
 };
 
 #endif

@@ -30,7 +30,7 @@ static inline float getRandMinusOneToOneF32() {
 }
 
 GuiParticleImage::GuiParticleImage(int32_t w, int32_t h, uint32_t particleCount, float minRadius, float maxRadius, float minSpeed, float maxSpeed)
-    : GuiImage(NULL) {
+    : GuiImage(nullptr) {
     width           = w;
     height          = h;
     imgType         = IMAGE_COLOR;
@@ -39,8 +39,14 @@ GuiParticleImage::GuiParticleImage(int32_t w, int32_t h, uint32_t particleCount,
     this->minSpeed  = minSpeed;
     this->maxSpeed  = maxSpeed;
 
-    posVertexs   = (float *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, ColorShader::cuVertexAttrSize * CIRCLE_VERTEX_COUNT);
+    posVertexs = (float *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, ColorShader::cuVertexAttrSize * CIRCLE_VERTEX_COUNT);
+    if (!posVertexs) {
+        throw std::runtime_error("Failed to allocate posVertexs in GuiParticleImage");
+    }
     colorVertexs = (uint8_t *) memalign(GX2_VERTEX_BUFFER_ALIGNMENT, ColorShader::cuColorAttrSize * CIRCLE_VERTEX_COUNT);
+    if (!colorVertexs) {
+        throw std::runtime_error("Failed to allocate colorVertexs in GuiParticleImage");
+    }
 
     for (uint32_t i = 0; i < CIRCLE_VERTEX_COUNT; i++) {
         posVertexs[i * 3 + 0] = cosf(DegToRad(i * 360.0f / CIRCLE_VERTEX_COUNT));
@@ -73,52 +79,50 @@ GuiParticleImage::~GuiParticleImage() {
     free(colorVertexs);
 }
 
-void GuiParticleImage::draw(CVideo *pVideo) {
+void GuiParticleImage::draw(const CVideo &pVideo) {
     if (!this->isVisible()) {
         return;
     }
 
-
     float currScaleX = getScaleX();
     float currScaleY = getScaleY();
 
-    positionOffsets[2] = getDepth() * pVideo->getDepthScaleFactor() * 2.0f;
+    positionOffsets[2] = getDepth() * pVideo.getDepthScaleFactor() * 2.0f;
 
     scaleFactor[2] = getScaleZ();
 
     //! add other colors intensities parameters
     colorIntensity[3] = getAlpha();
 
-    for (uint32_t i = 0; i < particles.size(); ++i) {
-        if (particles[i].position.y > (getHeight() * 0.5f + 30.0f)) {
-            particles[i].position.x = getRandMinusOneToOneF32() * getWidth() * 0.5f;
-            particles[i].position.y = -getHeight() * 0.5f - 30.0f;
-            particles[i].colors     = glm::vec4(1.0f, 1.0f, 1.0f, (getRandZeroToOneF32() * 0.6f) + 0.05f);
-            particles[i].radius     = getRandZeroToOneF32() * (maxRadius - minRadius) + minRadius;
-            particles[i].speed      = (getRandZeroToOneF32() * (maxSpeed - minSpeed)) + minSpeed;
-            particles[i].direction  = getRandMinusOneToOneF32();
+    for (auto &particle : particles) {
+        if (particle.position.y > (getHeight() * 0.5f + 30.0f)) {
+            particle.position.x = getRandMinusOneToOneF32() * getWidth() * 0.5f;
+            particle.position.y = -getHeight() * 0.5f - 30.0f;
+            particle.colors     = glm::vec4(1.0f, 1.0f, 1.0f, (getRandZeroToOneF32() * 0.6f) + 0.05f);
+            particle.radius     = getRandZeroToOneF32() * (maxRadius - minRadius) + minRadius;
+            particle.speed      = (getRandZeroToOneF32() * (maxSpeed - minSpeed)) + minSpeed;
+            particle.direction  = getRandMinusOneToOneF32();
         }
-        if (particles[i].position.x < (-getWidth() * 0.5f - 50.0f)) {
-            particles[i].position.x = -particles[i].position.x;
+        if (particle.position.x < (-getWidth() * 0.5f - 50.0f)) {
+            particle.position.x = -particle.position.x;
         }
 
+        particle.direction += getRandMinusOneToOneF32() * 0.03f;
+        particle.position.x += particle.speed * particle.direction;
+        particle.position.y += particle.speed;
 
-        particles[i].direction += getRandMinusOneToOneF32() * 0.03f;
-        particles[i].position.x += particles[i].speed * particles[i].direction;
-        particles[i].position.y += particles[i].speed;
+        positionOffsets[0] = (getCenterX() + particle.position.x) * pVideo.getWidthScaleFactor() * 2.0f;
+        positionOffsets[1] = (getCenterY() + particle.position.y) * pVideo.getHeightScaleFactor() * 2.0f;
 
-        positionOffsets[0] = (getCenterX() + particles[i].position.x) * pVideo->getWidthScaleFactor() * 2.0f;
-        positionOffsets[1] = (getCenterY() + particles[i].position.y) * pVideo->getHeightScaleFactor() * 2.0f;
-
-        scaleFactor[0] = currScaleX * particles[i].radius * pVideo->getWidthScaleFactor();
-        scaleFactor[1] = currScaleY * particles[i].radius * pVideo->getHeightScaleFactor();
+        scaleFactor[0] = currScaleX * particle.radius * pVideo.getWidthScaleFactor();
+        scaleFactor[1] = currScaleY * particle.radius * pVideo.getHeightScaleFactor();
 
         ColorShader::instance()->setShaders();
         ColorShader::instance()->setAttributeBuffer(colorVertexs, posVertexs, CIRCLE_VERTEX_COUNT);
         ColorShader::instance()->setAngle(0.0f);
         ColorShader::instance()->setOffset(positionOffsets);
         ColorShader::instance()->setScale(scaleFactor);
-        ColorShader::instance()->setColorIntensity(colorIntensity * particles[i].colors);
+        ColorShader::instance()->setColorIntensity(colorIntensity * particle.colors);
         ColorShader::instance()->draw(GX2_PRIMITIVE_MODE_TRIANGLE_FAN, CIRCLE_VERTEX_COUNT);
     }
 }

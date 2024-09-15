@@ -18,9 +18,9 @@ public:
 
 private:
     GuiImage bgImageColor;
-    GuiImageData *splashScreenData = nullptr;
-    gameInfo *info                 = nullptr;
-    bool launchGame                = false;
-    uint32_t frameCounter          = 0;
-    bool onTV                      = false;
+    std::unique_ptr<GuiImageData> splashScreenData = nullptr;
+    gameInfo *info                                 = nullptr;
+    bool launchGame                                = false;
+    uint32_t frameCounter                          = 0;
+    bool onTV                                      = false;
 };

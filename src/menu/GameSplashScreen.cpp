@@ -1,45 +1,42 @@
 #include "GameSplashScreen.h"
-#include "common/common.h"
 #include "fs/FSUtils.h"
-#include "utils/AsyncExecutor.h"
 #include "utils/logger.h"
+#include "utils/utils.h"
+#include <memory>
+#include <nn/acp/title.h>
 
 GameSplashScreen::GameSplashScreen(int32_t w, int32_t h, gameInfo *info, bool onTV) : GuiFrame(w, h),
                                                                                       bgImageColor(w, h, (GX2Color){0, 0, 0, 0}) {
-    bgImageColor.setImageColor((GX2Color){
-                                       79, 153, 239, 255},
-                               0);
-    bgImageColor.setImageColor((GX2Color){
-                                       79, 153, 239, 255},
-                               1);
-    bgImageColor.setImageColor((GX2Color){
-                                       59, 159, 223, 255},
-                               2);
-    bgImageColor.setImageColor((GX2Color){
-                                       59, 159, 223, 255},
-                               3);
+    bgImageColor.setImageColor((GX2Color){79, 153, 239, 255}, 0);
+    bgImageColor.setImageColor((GX2Color){79, 153, 239, 255}, 1);
+    bgImageColor.setImageColor((GX2Color){59, 159, 223, 255}, 2);
+    bgImageColor.setImageColor((GX2Color){59, 159, 223, 255}, 3);
     append(&bgImageColor);
     this->onTV = onTV;
     this->info = info;
 
-    std::string filepath = "fs:" + info->gamePath + META_PATH + "/bootDRCTex.tga";
-    if (onTV) {
-        filepath = "fs:" + info->gamePath + META_PATH + "/bootTVTex.tga";
+    this->effectFinished.connect(this, &GameSplashScreen::OnSplashScreenFadeInDone);
+
+
+    char metaDir[256] = {};
+    auto res          = ACPGetTitleMetaDir(info->titleId, metaDir, sizeof(metaDir) - 1);
+    if (res != ACP_RESULT_SUCCESS) {
+        DEBUG_FUNCTION_LINE_WARN("Failed to find assets");
+        return;
     }
-    uint8_t *buffer     = nullptr;
-    uint32_t bufferSize = 0;
-    int iResult         = FSUtils::LoadFileToMem(filepath.c_str(), &buffer, &bufferSize);
-    if (iResult > 0) {
-        splashScreenData = new GuiImageData(buffer, bufferSize, GX2_TEX_CLAMP_MODE_MIRROR);
+
+    std::string filepath = onTV ? std::string(metaDir).append("/bootTvTex.tga") : std::string(metaDir).append("/bootDrcTex.tga");
+
+    std::vector<uint8_t> buffer;
+    if (Utils::LoadFileIntoBuffer(filepath, buffer)) {
+        splashScreenData = std::make_unique<GuiImageData>(buffer, GX2_TEX_CLAMP_MODE_MIRROR);
         if (splashScreenData) {
-            bgImageColor.setImageData(splashScreenData);
+            bgImageColor.setImageData(std::move(splashScreenData));
             bgImageColor.setScale(((float) h) / splashScreenData->getHeight());
         }
 
         //! free original image buffer which is converted to texture now and not needed anymore
-        free(buffer);
     }
-    this->effectFinished.connect(this, &GameSplashScreen::OnSplashScreenFadeInDone);
 }
 
 void GameSplashScreen::OnSplashScreenFadeInDone(GuiElement *element) {
@@ -56,9 +53,4 @@ void GameSplashScreen::draw(CVideo *v) {
     }
 }
 
-GameSplashScreen::~GameSplashScreen() {
-    DEBUG_FUNCTION_LINE("Destroy me");
-    if (splashScreenData) {
-        AsyncExecutor::pushForDelete(splashScreenData);
-    }
-}
+GameSplashScreen::~GameSplashScreen() = default;

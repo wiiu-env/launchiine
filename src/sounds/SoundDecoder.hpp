@@ -29,6 +29,7 @@
 #include <mutex>
 #include <sounds/BufferCircle.hpp>
 #include <string>
+#include <span>
 
 class CFile;
 
@@ -38,7 +39,7 @@ public:
 
     SoundDecoder(const std::string &filepath);
 
-    SoundDecoder(const uint8_t *buffer, int32_t size);
+    SoundDecoder(std::span<uint8_t> snd);
 
     virtual ~SoundDecoder();
 
@@ -116,7 +117,7 @@ public:
         return Decoding;
     }
 
-    void EnableUpsample(void);
+    void EnableUpsample();
 
     enum SoundFormats {
         FORMAT_PCM_16_BIT = 0x0A,
@@ -139,22 +140,22 @@ protected:
 
     void Upsample(int16_t *src, int16_t *dst, uint32_t nr_src_samples, uint32_t nr_dst_samples);
 
-    CFile *file_fd;
+    std::unique_ptr<CFile> file_fd;
     BufferCircle SoundBuffer;
-    uint8_t SoundType;
-    uint16_t whichLoad;
-    uint16_t SoundBlocks;
-    int32_t SoundBlockSize;
-    int32_t CurPos;
-    bool ResampleTo48kHz;
-    bool Loop;
-    bool EndOfFile;
-    bool Decoding;
-    bool ExitRequested;
-    uint16_t Format;
-    uint16_t SampleRate;
-    uint8_t *ResampleBuffer;
-    uint32_t ResampleRatio;
+    uint8_t SoundType{};
+    uint16_t whichLoad{};
+    uint16_t SoundBlocks{};
+    int32_t SoundBlockSize{};
+    int32_t CurPos{};
+    bool ResampleTo48kHz{};
+    bool Loop{};
+    bool EndOfFile{};
+    bool Decoding{};
+    bool ExitRequested{};
+    uint16_t Format{};
+    uint16_t SampleRate{};
+    uint8_t *ResampleBuffer{};
+    uint32_t ResampleRatio{};
     std::recursive_mutex mutex;
 };
 

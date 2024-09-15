@@ -52,13 +52,12 @@ typedef struct {
 
 class WavDecoder : public SoundDecoder {
 public:
-    WavDecoder(const char *filepath);
 
-    WavDecoder(const uint8_t *snd, int32_t len);
+    WavDecoder(std::span<uint8_t> snd);
 
-    virtual ~WavDecoder();
+    ~WavDecoder() override;
 
-    int32_t Read(uint8_t *buffer, int32_t buffer_size, int32_t pos);
+    int32_t Read(uint8_t *buffer, int32_t buffer_size, int32_t pos) override;
 
 protected:
     void OpenFile();

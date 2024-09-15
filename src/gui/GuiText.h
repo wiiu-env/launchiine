@@ -65,7 +65,7 @@ public:
     //!\param a Text alignment
     static void setPresets(int32_t sz, const glm::vec4 &c, int32_t w, int32_t a);
 
-    static void setPresetFont(FreeTypeGX *font);
+    static void setPresetFont(std::shared_ptr<FreeTypeGX> font);
 
     //!Sets the font size
     //!\param s Font size

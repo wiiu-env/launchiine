@@ -29,24 +29,22 @@
 
 class Mp3Decoder : public SoundDecoder {
 public:
-    Mp3Decoder(const char *filepath);
+    explicit Mp3Decoder(std::span<uint8_t> snd);
 
-    Mp3Decoder(const uint8_t *sound, int32_t len);
+    ~Mp3Decoder() override;
 
-    virtual ~Mp3Decoder();
+    int32_t Rewind() override;
 
-    int32_t Rewind();
-
-    int32_t Read(uint8_t *buffer, int32_t buffer_size, int32_t pos);
+    int32_t Read(uint8_t *buffer, int32_t buffer_size, int32_t pos) override;
 
 protected:
     void OpenFile();
 
-    struct mad_stream Stream;
-    struct mad_frame Frame;
-    struct mad_synth Synth;
-    mad_timer_t Timer;
-    uint8_t *GuardPtr;
+    struct mad_stream Stream{};
+    struct mad_frame Frame{};
+    struct mad_synth Synth{};
+    mad_timer_t Timer{};
+    uint8_t *GuardPtr{};
     uint8_t *ReadBuffer;
-    uint32_t SynthPos;
+    uint32_t SynthPos{};
 };

@@ -18,25 +18,17 @@
 #define GUI_SOUND_H_
 
 #include <gui/GuiElement.h>
+#include <memory>
+#include <string_view>
+#include <vector>
 
 //!Sound conversion and playback. A wrapper for other sound libraries - ASND, libmad, ltremor, etc
 class GuiSound : public GuiElement {
 public:
-    //!Constructor
-    //!\param sound Pointer to the sound data
-    //!\param filesize Length of sound data
-    GuiSound(const char *filepath);
-
-    GuiSound(const uint8_t *sound, int32_t length);
+    explicit GuiSound(std::vector<uint8_t>&& snd);
 
     //!Destructor
-    virtual ~GuiSound();
-
-    //!Load a file and replace the old one
-    bool Load(const char *filepath);
-
-    //!Load a file and replace the old one
-    bool Load(const uint8_t *snd, int32_t len);
+    ~GuiSound() override;
 
     //!Start sound playback
     void Play();
@@ -52,7 +44,7 @@ public:
 
     //!Checks if the sound is currently playing
     //!\return true if sound is playing, false otherwise
-    bool IsPlaying();
+    [[nodiscard]] bool IsPlaying() const;
 
     //!Rewind the music
     void Rewind();
@@ -66,6 +58,11 @@ public:
 
 protected:
     int32_t voice; //!< Currently assigned ASND voice channel
+    std::vector<uint8_t> internalBuffer;
+
+private:
+    //!Load a file and replace the old one
+    bool Load();
 };
 
 #endif

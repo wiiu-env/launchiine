@@ -20,6 +20,8 @@
 #include "menu/MainWindow.h"
 #include "system/CThread.h"
 #include <video/CVideo.h>
+#include <memory>
+#include <array>
 
 // forward declaration
 class FreeTypeGX;
@@ -39,44 +41,43 @@ public:
         }
     }
 
-    CVideo *getVideo(void) const {
-        return video;
+    [[nodiscard]] CVideo *getVideo() const {
+        return video.get();
     }
 
-    MainWindow *getMainWindow(void) const {
-        return mainWindow;
+    [[nodiscard]] MainWindow *getMainWindow() const {
+        return mainWindow.get();
     }
 
-    GuiSound *getBgMusic(void) const {
-        return bgMusic;
+    [[nodiscard]] GuiSound *getBgMusic() const {
+        return bgMusic.get();
     }
 
-    int exec(void);
+    int exec();
 
-    void fadeOut(void);
+    void fadeOut();
 
     void quit(int code);
 
 private:
     Application();
 
-    virtual ~Application();
+    ~Application() override;
 
-    bool procUI(void);
+    bool procUI();
 
     static Application *applicationInstance;
     static bool exitApplication;
     static bool quitRequest;
 
-    void executeThread(void);
+    void executeThread() override;
 
-    GuiSound *bgMusic;
-    CVideo *video;
-    MainWindow *mainWindow;
-    FreeTypeGX *fontSystem;
-    GuiController *controller[5]{};
+    std::unique_ptr<GuiSound> bgMusic;
+    std::unique_ptr<CVideo> video;
+    std::unique_ptr<MainWindow> mainWindow;
+    std::shared_ptr<FreeTypeGX> fontSystem;
+    std::array<std::unique_ptr<GuiController>, 5> controller;
     int exitCode;
-    BOOL sFromHBL = FALSE;
 };
 
 #endif //_APPLICATION_H

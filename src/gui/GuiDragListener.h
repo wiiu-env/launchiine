@@ -30,25 +30,21 @@ public:
     GuiDragListener(float w, float h);
 
     //!Destructor
-    virtual ~GuiDragListener();
-
-    void setState(int32_t i, int32_t c);
+    ~GuiDragListener() override;
 
     //!Set a new GuiTrigger for the element
     //!\param i Index of trigger array to set
     //!\param t Pointer to GuiTrigger
-    void setTrigger(GuiTrigger *t, int32_t idx = -1);
+    void setTrigger(const std::shared_ptr<GuiTrigger> &, int32_t idx = -1);
 
     //!Constantly called to allow the GuiDragListener to respond to updated input data
     //!\param t Pointer to a GuiTrigger, containing the current input data from PAD/WPAD
-    void update(GuiController *c);
+    void update(const GuiController &c) override;
 
     sigslot::signal5<GuiDragListener *, const GuiController *, GuiTrigger *, int32_t, int32_t> dragged;
 
 protected:
-    static const int32_t iMaxGuiTriggers = 10;
-
-    GuiTrigger *trigger[iMaxGuiTriggers]; //!< GuiTriggers (input actions) that this element responds to
+    std::array<std::shared_ptr<GuiTrigger>, 10> trigger; //!< GuiTriggers (input actions) that this element responds to
 };
 
 #endif

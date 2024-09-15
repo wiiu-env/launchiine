@@ -31,20 +31,21 @@ using namespace std;
 /**
  * Default constructor for the FreeTypeGX class.
  */
-FreeTypeGX::FreeTypeGX(const uint8_t *fontBuffer, FT_Long bufferSize, bool lastFace) {
+FreeTypeGX::FreeTypeGX(std::vector<uint8_t> &&data, bool lastFace) {
     int32_t faceIndex = 0;
     GX2InitSampler(&ftSampler, GX2_TEX_CLAMP_MODE_CLAMP_BORDER, GX2_TEX_XY_FILTER_MODE_LINEAR);
+    rawFontData = std::move(data);
 
     FT_Init_FreeType(&ftLibrary);
     faceMutex.lock();
     if (lastFace) {
 
-        FT_New_Memory_Face(ftLibrary, (FT_Byte *) fontBuffer, bufferSize, -1, &ftFace);
+        FT_New_Memory_Face(ftLibrary, (FT_Byte *) rawFontData.data(), rawFontData.size(), -1, &ftFace);
         faceIndex = ftFace->num_faces - 1; // Use the last face
         FT_Done_Face(ftFace);
         ftFace = NULL;
     }
-    FT_New_Memory_Face(ftLibrary, (FT_Byte *) fontBuffer, bufferSize, faceIndex, &ftFace);
+    FT_New_Memory_Face(ftLibrary, (FT_Byte *) rawFontData.data(), rawFontData.size(), faceIndex, &ftFace);
 
     ftKerningEnabled = FT_HAS_KERNING(ftFace);
     faceMutex.unlock();
@@ -60,6 +61,7 @@ FreeTypeGX::~FreeTypeGX() {
     FT_Done_Face(ftFace);
     faceMutex.unlock();
     FT_Done_FreeType(ftLibrary);
+    rawFontData.clear();
 }
 
 /**

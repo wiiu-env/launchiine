@@ -18,7 +18,6 @@
 #include "common/common.h"
 #include "resources/Resources.h"
 #include "system/memory.h"
-#include "utils/AsyncExecutor.h"
 #include "utils/logger.h"
 #include <coreinit/core.h>
 #include <coreinit/foreground.h>
@@ -37,19 +36,17 @@ bool Application::quitRequest                 = false;
 
 Application::Application()
     : CThread(CThread::eAttributeAffCore1 | CThread::eAttributePinnedAff, 0, 0x800000), bgMusic(nullptr), video(nullptr), mainWindow(nullptr), fontSystem(nullptr), exitCode(0) {
-    controller[0] = new VPadController(GuiTrigger::CHANNEL_1);
-    controller[1] = new WPadController(GuiTrigger::CHANNEL_2);
-    controller[2] = new WPadController(GuiTrigger::CHANNEL_3);
-    controller[3] = new WPadController(GuiTrigger::CHANNEL_4);
-    controller[4] = new WPadController(GuiTrigger::CHANNEL_5);
+    controller[0] = std::make_unique<VPadController>(GuiTrigger::CHANNEL_1);
+    controller[1] = std::make_unique<WPadController>(GuiTrigger::CHANNEL_2);
+    controller[2] = std::make_unique<WPadController>(GuiTrigger::CHANNEL_3);
+    controller[3] = std::make_unique<WPadController>(GuiTrigger::CHANNEL_4);
+    controller[4] = std::make_unique<WPadController>(GuiTrigger::CHANNEL_5);
 
     //! create bgMusic
-    bgMusic = new GuiSound(Resources::GetFile("bgMusic.ogg"), Resources::GetFileSize("bgMusic.ogg"));
+    bgMusic = std::make_unique<GuiSound>(Resources::GetFile("bgMusic.ogg"));
     bgMusic->SetLoop(true);
     bgMusic->Play();
     bgMusic->SetVolume(50);
-
-    AsyncExecutor::execute([] { DEBUG_FUNCTION_LINE("Hello"); });
 
     exitApplication = false;
 
@@ -57,23 +54,11 @@ Application::Application()
 }
 
 Application::~Application() {
-    DEBUG_FUNCTION_LINE("Destroy music");
-    delete bgMusic;
-
-    DEBUG_FUNCTION_LINE("Destroy controller");
-
-    for (auto &i : controller) {
-        delete i;
-    }
-
     DEBUG_FUNCTION_LINE("Clear resources");
     Resources::Clear();
 
     DEBUG_FUNCTION_LINE("Stop sound handler");
     SoundHandler::DestroyInstance();
-
-    DEBUG_FUNCTION_LINE("Clear AsyncExecutor");
-    AsyncExecutor::destroyInstance();
 
     ProcUIShutdown();
 }
@@ -104,10 +89,10 @@ void Application::fadeOut() {
 
         //! start rendering DRC
         video->prepareDrcRendering();
-        mainWindow->drawDrc(video);
+        mainWindow->drawDrc(*video);
 
         GX2SetDepthOnlyControl(GX2_DISABLE, GX2_DISABLE, GX2_COMPARE_FUNC_ALWAYS);
-        fadeOut.draw(video);
+        fadeOut.draw(*video);
         GX2SetDepthOnlyControl(GX2_ENABLE, GX2_ENABLE, GX2_COMPARE_FUNC_LEQUAL);
 
         video->drcDrawDone();
@@ -115,10 +100,10 @@ void Application::fadeOut() {
         //! start rendering TV
         video->prepareTvRendering();
 
-        mainWindow->drawTv(video);
+        mainWindow->drawTv(*video);
 
         GX2SetDepthOnlyControl(GX2_DISABLE, GX2_DISABLE, GX2_COMPARE_FUNC_ALWAYS);
-        fadeOut.draw(video);
+        fadeOut.draw(*video);
         GX2SetDepthOnlyControl(GX2_ENABLE, GX2_ENABLE, GX2_COMPARE_FUNC_LEQUAL);
 
         video->tvDrawDone();
@@ -148,12 +133,10 @@ bool Application::procUI() {
                 video->drcEnable(true);
 
                 DEBUG_FUNCTION_LINE("delete fontSystem");
-                delete fontSystem;
-                fontSystem = nullptr;
+                fontSystem.reset();
 
                 DEBUG_FUNCTION_LINE("delete video");
-                delete video;
-                video = nullptr;
+                video.reset();
 
                 DEBUG_FUNCTION_LINE("deinitialze memory");
                 libgui_memoryRelease();
@@ -171,17 +154,17 @@ bool Application::procUI() {
                     libgui_memoryInitialize();
 
                     DEBUG_FUNCTION_LINE("Initialize video");
-                    video = new CVideo(GX2_TV_SCAN_MODE_720P, GX2_DRC_RENDER_MODE_SINGLE);
+                    video = std::make_unique<CVideo>(GX2_TV_SCAN_MODE_720P, GX2_DRC_RENDER_MODE_SINGLE);
                     DEBUG_FUNCTION_LINE("Video size %i x %i", video->getTvWidth(), video->getTvHeight());
 
                     //! setup default Font
                     DEBUG_FUNCTION_LINE("Initialize main font system");
-                    auto *fontSystem = new FreeTypeGX(Resources::GetFile("font.ttf"), Resources::GetFileSize("font.ttf"), true);
+                    fontSystem = std::make_shared<FreeTypeGX>(Resources::GetFile("font.ttf"), true);
                     GuiText::setPresetFont(fontSystem);
 
                     if (mainWindow == nullptr) {
                         DEBUG_FUNCTION_LINE("Initialize main window");
-                        mainWindow = new MainWindow(video->getTvWidth(), video->getTvHeight());
+                        mainWindow = std::make_unique<MainWindow>(video->getTvWidth(), video->getTvHeight());
                     }
                 }
                 executeProcess = true;
@@ -214,17 +197,17 @@ void Application::executeThread() {
                 continue;
 
             //! update controller states
-            mainWindow->update(i);
+            mainWindow->update(*i);
         }
 
         //! start rendering DRC
         video->prepareDrcRendering();
-        mainWindow->drawDrc(video);
+        mainWindow->drawDrc(*video);
         video->drcDrawDone();
 
         //! start rendering TV
         video->prepareTvRendering();
-        mainWindow->drawTv(video);
+        mainWindow->drawTv(*video);
         video->tvDrawDone();
 
         //! enable screen after first frame render
@@ -245,16 +228,14 @@ void Application::executeThread() {
     }
 
     DEBUG_FUNCTION_LINE("delete mainWindow");
-    delete mainWindow;
-    mainWindow = nullptr;
+    mainWindow.reset();
 
     DEBUG_FUNCTION_LINE("delete fontSystem");
-    delete fontSystem;
-    fontSystem = nullptr;
+    fontSystem.reset();
+
 
     DEBUG_FUNCTION_LINE("delete video");
-    delete video;
-    video = nullptr;
+    video.reset();
 
     DEBUG_FUNCTION_LINE("deinitialize memory");
     libgui_memoryRelease();

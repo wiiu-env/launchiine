@@ -33,8 +33,8 @@ GuiElement::GuiElement() {
     scaleX  = 1.0f;
     scaleY  = 1.0f;
     scaleZ  = 1.0f;
-    for (int32_t i = 0; i < 5; i++) {
-        state[i] = STATE_DEFAULT;
+    for (int & i : state) {
+        i = STATE_DEFAULT;
     }
     stateChan                = -1;
     parentElement            = NULL;

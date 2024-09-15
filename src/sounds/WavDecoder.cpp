@@ -26,10 +26,11 @@
 #include "fs/CFile.hpp"
 #include "utils/utils.h"
 #include <sounds/WavDecoder.hpp>
-#include <string.h>
+#include <cstring>
 
-WavDecoder::WavDecoder(const char *filepath)
-    : SoundDecoder(filepath) {
+
+WavDecoder::WavDecoder(std::span<uint8_t> snd)
+    : SoundDecoder(snd) {
     SoundType  = SOUND_WAV;
     SampleRate = 48000;
     Format     = CHANNELS_STEREO | FORMAT_PCM_16_BIT;
@@ -41,21 +42,7 @@ WavDecoder::WavDecoder(const char *filepath)
     OpenFile();
 }
 
-WavDecoder::WavDecoder(const uint8_t *snd, int32_t len)
-    : SoundDecoder(snd, len) {
-    SoundType  = SOUND_WAV;
-    SampleRate = 48000;
-    Format     = CHANNELS_STEREO | FORMAT_PCM_16_BIT;
-
-    if (!file_fd) {
-        return;
-    }
-
-    OpenFile();
-}
-
-WavDecoder::~WavDecoder() {
-}
+WavDecoder::~WavDecoder() = default;
 
 
 void WavDecoder::OpenFile() {
@@ -111,10 +98,10 @@ void WavDecoder::OpenFile() {
 
 void WavDecoder::CloseFile() {
     if (file_fd) {
-        delete file_fd;
+        file_fd.reset();
     }
 
-    file_fd = NULL;
+    file_fd = nullptr;
 }
 
 int32_t WavDecoder::Read(uint8_t *buffer, int32_t buffer_size, int32_t pos) {

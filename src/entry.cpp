@@ -7,14 +7,7 @@
 #include <whb/log_udp.h>
 
 int32_t main(int32_t argc, char **argv) {
-    bool moduleInit;
-    bool cafeInit = false;
-    bool udpInit  = false;
-
-    if (!(moduleInit = WHBLogModuleInit())) {
-        cafeInit = WHBLogCafeInit();
-        udpInit  = WHBLogUdpInit();
-    }
+    initLogging();
 
     DEBUG_FUNCTION_LINE("Starting launchiine " LAUNCHIINE_VERSION "");
 
@@ -28,16 +21,6 @@ int32_t main(int32_t argc, char **argv) {
 
     DEBUG_FUNCTION_LINE("Peace out...");
 
-    if (cafeInit) {
-        WHBLogCafeDeinit();
-    }
-
-    if (udpInit) {
-        WHBLogUdpDeinit();
-    }
-
-    if (moduleInit) {
-        WHBLogModuleDeinit();
-    }
+    deinitLogging();
     return 0;
 }

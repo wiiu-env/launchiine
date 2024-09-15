@@ -26,8 +26,8 @@ public:
     typedef void (*Callback)(CThread *thread, void *arg);
 
     //! constructor
-    CThread(int32_t iAttr, int32_t iPriority = 16, int32_t iStackSize = 0x8000, CThread::Callback callback = NULL, void *callbackArg = NULL)
-        : pThread(NULL), pThreadStack(NULL), pCallback(callback), pCallbackArg(callbackArg) {
+    explicit CThread(int32_t iAttr, int32_t iPriority = 16, int32_t iStackSize = 0x8000, CThread::Callback callback = nullptr, void *callbackArg = nullptr)
+        : pThread(nullptr), pThreadStack(nullptr), pCallback(callback), pCallbackArg(callbackArg) {
         //! save attribute assignment
         iAttributes = iAttr;
         //! allocate the thread
@@ -50,19 +50,19 @@ public:
     }
 
     //! Get thread ID
-    virtual void *getThread() const {
+    [[nodiscard]] virtual void *getThread() const {
         return pThread;
     }
 
     //! Thread entry function
-    virtual void executeThread(void) {
+    virtual void executeThread() {
         if (pCallback) {
             pCallback(this, pCallbackArg);
         }
     }
 
     //! Suspend thread
-    virtual void suspendThread(void) {
+    virtual void suspendThread() {
         if (isThreadSuspended()) {
             return;
         }
@@ -72,7 +72,7 @@ public:
     }
 
     //! Resume thread
-    virtual void resumeThread(void) {
+    virtual void resumeThread() {
         if (!isThreadSuspended()) {
             return;
         }
@@ -89,7 +89,7 @@ public:
     }
 
     //! Check if thread is suspended
-    virtual bool isThreadSuspended(void) const {
+    [[nodiscard]] virtual bool isThreadSuspended() const {
         if (pThread) {
             return OSIsThreadSuspended(pThread);
         }
@@ -97,7 +97,7 @@ public:
     }
 
     //! Check if thread is terminated
-    virtual bool isThreadTerminated(void) const {
+    [[maybe_unused]] virtual bool isThreadTerminated() const {
         if (pThread) {
             return OSIsThreadTerminated(pThread);
         }
@@ -105,19 +105,19 @@ public:
     }
 
     //! Check if thread is running
-    virtual bool isThreadRunning(void) const {
+    [[nodiscard]] virtual bool isThreadRunning() const {
         return !isThreadSuspended() && !isThreadRunning();
     }
 
     //! Shutdown thread
-    virtual void shutdownThread(void) {
+    virtual void shutdownThread() {
         //! wait for thread to finish
         if (pThread && !(iAttributes & eAttributeDetach)) {
             if (isThreadSuspended()) {
                 resumeThread();
             }
 
-            OSJoinThread(pThread, NULL);
+            OSJoinThread(pThread, nullptr);
         }
         //! free the thread stack buffer
         if (pThreadStack) {
@@ -127,8 +127,8 @@ public:
             free(pThread);
         }
 
-        pThread      = NULL;
-        pThreadStack = NULL;
+        pThread      = nullptr;
+        pThreadStack = nullptr;
     }
 
     //! Thread attributes

@@ -453,7 +453,7 @@ void GuiIconGrid::OnGameTitleAdded(gameInfo *info) {
     button->pointedOff.connect(this, &GuiIconGrid::OnGameButtonPointedOff);
     //button->dragged.connect(this, &GuiIconGrid::OnGameButtonDragged);
 
-    GameInfoContainer *container = new GameInfoContainer(button, image, info);
+    auto *container = new GameInfoContainer(button, image, info);
     containerMutex.lock();
     gameInfoContainers[info->titleId] = container;
     containerMutex.unlock();
@@ -461,9 +461,9 @@ void GuiIconGrid::OnGameTitleAdded(gameInfo *info) {
 
     positionMutex.lock();
     bool foundFreePlace = false;
-    for (uint32_t i = 0; i < position.size(); i++) {
-        if (position[i] == 0) {
-            position[i]    = info->titleId;
+    for (unsigned long long & i : position) {
+        if (i == 0) {
+            i    = info->titleId;
             foundFreePlace = true;
             break;
         }

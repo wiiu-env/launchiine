@@ -30,8 +30,9 @@
 #include <malloc.h>
 #include <map>
 #include <mutex>
-#include <string.h>
-#include <wchar.h>
+#include <cstring>
+#include <cwchar>
+#include <vector>
 
 
 #include <gui/gx2_ext.h>
@@ -112,13 +113,14 @@ class CVideo;
  */
 class FreeTypeGX {
 private:
-    FT_Library ftLibrary;  /**< FreeType FT_Library instance. */
+    FT_Library ftLibrary{};  /**< FreeType FT_Library instance. */
     FT_Face ftFace;        /**< FreeType reusable FT_Face typographic object. */
     bool ftKerningEnabled; /**< Flag indicating the availability of font kerning data. */
-    uint8_t vertexIndex;   /**< Vertex format descriptor index. */
-    GX2Sampler ftSampler;
+    uint8_t vertexIndex{};   /**< Vertex format descriptor index. */
+    GX2Sampler ftSampler{};
     std::recursive_mutex faceMutex;
     std::recursive_mutex fontDataMutex;
+    std::vector<uint8_t> rawFontData;
 
     typedef struct _ftGX2Data {
         ftgxDataOffset ftgxAlign;
@@ -143,7 +145,7 @@ private:
                                   const float &superSamplingScale);
 
 public:
-    FreeTypeGX(const uint8_t *fontBuffer, FT_Long bufferSize, bool lastFace = false);
+    FreeTypeGX(std::vector<uint8_t>&& data, bool lastFace = false);
 
     ~FreeTypeGX();
 

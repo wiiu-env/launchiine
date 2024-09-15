@@ -30,6 +30,7 @@
 #include <sounds/OggDecoder.hpp>
 #include <sounds/SoundHandler.hpp>
 #include <sounds/WavDecoder.hpp>
+#include <span>
 #include <unistd.h>
 
 SoundHandler *SoundHandler::handlerInstance = NULL;
@@ -39,15 +40,16 @@ SoundHandler::SoundHandler()
     Decoding      = false;
     ExitRequested = false;
     for (uint32_t i = 0; i < MAX_DECODERS; ++i) {
-        DecoderList[i] = NULL;
-        voiceList[i]   = NULL;
+        DecoderList[i].reset();
+        voiceList[i].reset();
     }
 
     resumeThread();
 
     //! wait for initialization
-    while (!isThreadSuspended())
+    while (!isThreadSuspended()) {
         OSSleepTicks(OSMicrosecondsToTicks(1000));
+    }
 }
 
 SoundHandler::~SoundHandler() {
@@ -57,28 +59,16 @@ SoundHandler::~SoundHandler() {
     ClearDecoderList();
 }
 
-void SoundHandler::AddDecoder(int32_t voice, const char *filepath) {
+void SoundHandler::AddDecoder(int32_t voice, const std::span<uint8_t> snd) {
     if (voice < 0 || voice >= MAX_DECODERS) {
         return;
     }
 
-    if (DecoderList[voice] != NULL) {
+    if (DecoderList[voice] != nullptr) {
         RemoveDecoder(voice);
     }
 
-    DecoderList[voice] = GetSoundDecoder(filepath);
-}
-
-void SoundHandler::AddDecoder(int32_t voice, const uint8_t *snd, int32_t len) {
-    if (voice < 0 || voice >= MAX_DECODERS) {
-        return;
-    }
-
-    if (DecoderList[voice] != NULL) {
-        RemoveDecoder(voice);
-    }
-
-    DecoderList[voice] = GetSoundDecoder(snd, len);
+    DecoderList[voice] = GetSoundDecoder(snd);
 }
 
 void SoundHandler::RemoveDecoder(int32_t voice) {
@@ -86,7 +76,7 @@ void SoundHandler::RemoveDecoder(int32_t voice) {
         return;
     }
 
-    if (DecoderList[voice] != NULL) {
+    if (DecoderList[voice] != nullptr) {
         if (voiceList[voice] && voiceList[voice]->getState() != Voice::STATE_STOPPED) {
             if (voiceList[voice]->getState() != Voice::STATE_STOP) {
                 voiceList[voice]->setState(Voice::STATE_STOP);
@@ -99,11 +89,7 @@ void SoundHandler::RemoveDecoder(int32_t voice) {
             while (--timeOut && (voiceList[voice]->getState() != Voice::STATE_STOPPED))
                 OSSleepTicks(OSMicrosecondsToTicks(1000));
         }
-        SoundDecoder *decoder = DecoderList[voice];
-        decoder->Lock();
-        DecoderList[voice] = NULL;
-        decoder->Unlock();
-        delete decoder;
+        DecoderList[voice].reset();
     }
 }
 
@@ -114,7 +100,7 @@ void SoundHandler::ClearDecoderList() {
 }
 
 static inline bool CheckMP3Signature(const uint8_t *buffer) {
-    const char MP3_Magic[][3] = {
+    const uint8_t MP3_Magic[][3] = {
             {'I', 'D', '3'}, //'ID3'
             {0xff, 0xfe},    //'MPEG ADTS, layer III, v1.0 [protected]', 'mp3', 'audio/mpeg'),
             {0xff, 0xff},    //'MPEG ADTS, layer III, v1.0', 'mp3', 'audio/mpeg'),
@@ -144,60 +130,30 @@ static inline bool CheckMP3Signature(const uint8_t *buffer) {
     return false;
 }
 
-SoundDecoder *SoundHandler::GetSoundDecoder(const char *filepath) {
-    uint32_t magic;
-    CFile f(filepath, CFile::ReadOnly);
-    if (f.size() == 0) {
-        return NULL;
-    }
-
-    do {
-        f.read((uint8_t *) &magic, 1);
-    } while (((uint8_t *) &magic)[0] == 0 && f.tell() < f.size());
-
-    if (f.tell() == f.size()) {
-        return NULL;
-    }
-
-    f.seek(f.tell() - 1, SEEK_SET);
-    f.read((uint8_t *) &magic, 4);
-    f.close();
-
-    if (magic == 0x4f676753) { // 'OggS'
-        return new OggDecoder(filepath);
-    } else if (magic == 0x52494646) { // 'RIFF'
-        return new WavDecoder(filepath);
-    } else if (CheckMP3Signature((uint8_t *) &magic) == true) {
-        return new Mp3Decoder(filepath);
-    }
-
-    return new SoundDecoder(filepath);
-}
-
-SoundDecoder *SoundHandler::GetSoundDecoder(const uint8_t *sound, int32_t length) {
-    const uint8_t *check = sound;
+std::unique_ptr<SoundDecoder> SoundHandler::GetSoundDecoder(std::span<uint8_t> snd) {
+    const uint8_t *check = snd.data();
     int32_t counter      = 0;
 
-    while (check[0] == 0 && counter < length) {
+    while (check[0] == 0 && counter < snd.size()) {
         check++;
         counter++;
     }
 
-    if (counter >= length) {
-        return NULL;
+    if (counter >= snd.size()) {
+        return nullptr;
     }
 
-    uint32_t *magic = (uint32_t *) check;
+    auto *magic = (uint32_t *) check;
 
     if (magic[0] == 0x4f676753) { // 'OggS'
-        return new OggDecoder(sound, length);
+        return std::make_unique<OggDecoder>(snd);
     } else if (magic[0] == 0x52494646) { // 'RIFF'
-        return new WavDecoder(sound, length);
-    } else if (CheckMP3Signature(check) == true) {
-        return new Mp3Decoder(sound, length);
+        return std::make_unique<WavDecoder>(snd);
+    } else if (CheckMP3Signature(check)) {
+        return std::make_unique<Mp3Decoder>(snd);
     }
 
-    return new SoundDecoder(sound, length);
+    return std::make_unique<SoundDecoder>(snd);
 }
 
 void SoundHandler::executeThread() {
@@ -224,7 +180,7 @@ void SoundHandler::executeThread() {
     // we would need MAX_DECODERS > Voice::PRIO_MAX
     for (uint32_t i = 0; i < MAX_DECODERS; ++i) {
         int32_t priority = (MAX_DECODERS - i) * Voice::PRIO_MAX / MAX_DECODERS;
-        voiceList[i]     = new Voice(priority); // allocate voice 0 with highest priority
+        voiceList[i]     = std::make_unique<Voice>(priority); // allocate voice 0 with highest priority
     }
 
     AXRegisterAppFrameCallback(SoundHandler::axFrameCallback);
@@ -235,7 +191,7 @@ void SoundHandler::executeThread() {
         suspendThread();
 
         for (i = 0; i < MAX_DECODERS; ++i) {
-            if (DecoderList[i] == NULL) {
+            if (DecoderList[i] == nullptr) {
                 continue;
             }
 
@@ -253,20 +209,19 @@ void SoundHandler::executeThread() {
         Decoding = false;
     }
 
-    for (uint32_t i = 0; i < MAX_DECODERS; ++i) {
-        voiceList[i]->stop();
+    for (auto &voice : voiceList) {
+        voice->stop();
     }
 
-    AXRegisterAppFrameCallback(NULL);
+    AXRegisterAppFrameCallback(nullptr);
     AXQuit();
 
-    for (uint32_t i = 0; i < MAX_DECODERS; ++i) {
-        delete voiceList[i];
-        voiceList[i] = NULL;
+    for (auto &voice : voiceList) {
+        voice.reset();
     }
 }
 
-void SoundHandler::axFrameCallback(void) {
+void SoundHandler::axFrameCallback() {
     for (uint32_t i = 0; i < MAX_DECODERS; i++) {
         Voice *voice = handlerInstance->getVoice(i);
 
@@ -283,7 +238,7 @@ void SoundHandler::axFrameCallback(void) {
                     const uint32_t bufferSize = decoder->GetBufferSize();
                     decoder->LoadNext();
 
-                    const uint8_t *nextBuffer = NULL;
+                    const uint8_t *nextBuffer = nullptr;
                     uint32_t nextBufferSize   = 0;
 
                     if (decoder->IsBufferReady()) {

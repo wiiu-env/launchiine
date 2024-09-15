@@ -53,19 +53,10 @@ static ov_callbacks callbacks = {
         (int (*)(void *)) ogg_close,
         (long (*)(void *)) ogg_tell};
 
-OggDecoder::OggDecoder(const char *filepath)
-    : SoundDecoder(filepath) {
-    SoundType = SOUND_OGG;
 
-    if (!file_fd) {
-        return;
-    }
 
-    OpenFile();
-}
-
-OggDecoder::OggDecoder(const uint8_t *snd, int32_t len)
-    : SoundDecoder(snd, len) {
+OggDecoder::OggDecoder(std::span<uint8_t> snd)
+    : SoundDecoder(snd) {
     SoundType = SOUND_OGG;
 
     if (!file_fd) {
@@ -77,8 +68,9 @@ OggDecoder::OggDecoder(const uint8_t *snd, int32_t len)
 
 OggDecoder::~OggDecoder() {
     ExitRequested = true;
-    while (Decoding)
+    while (Decoding) {
         OSSleepTicks(OSMicrosecondsToTicks(100));
+    }
 
     if (file_fd) {
         ov_clear(&ogg_file);
@@ -86,17 +78,15 @@ OggDecoder::~OggDecoder() {
 }
 
 void OggDecoder::OpenFile() {
-    if (ov_open_callbacks(file_fd, &ogg_file, NULL, 0, callbacks) < 0) {
-        delete file_fd;
-        file_fd = NULL;
+    if (ov_open_callbacks(file_fd.get(), &ogg_file, nullptr, 0, callbacks) < 0) {
+        file_fd.reset();
         return;
     }
 
     ogg_info = ov_info(&ogg_file, -1);
     if (!ogg_info) {
         ov_clear(&ogg_file);
-        delete file_fd;
-        file_fd = NULL;
+        file_fd.reset();
         return;
     }
 

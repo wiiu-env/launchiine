@@ -269,13 +269,13 @@ Texture2DShader::Texture2DShader()
 Texture2DShader::~Texture2DShader() {
     if (posVtxs) {
         free(posVtxs);
-        posVtxs = NULL;
+        posVtxs = nullptr;
     }
     if (texCoords) {
         free(texCoords);
-        texCoords = NULL;
+        texCoords = nullptr;
     }
 
     delete fetchShader;
-    fetchShader = NULL;
+    fetchShader = nullptr;
 }

@@ -1,7 +1,11 @@
 #pragma once
 
+#include <cstdint>
 #include <map>
-#include <stdint.h>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <vector>
 
 //! forward declaration
 class GuiImageData;
@@ -10,29 +14,20 @@ class GuiSound;
 
 class Resources {
 public:
+    Resources() = default;
+    ~Resources() = default;
+
     static void Clear();
 
-    static bool LoadFiles(const char *path);
+    static std::vector<uint8_t> GetFile(std::string_view filename);
 
-    static const uint8_t *GetFile(const char *filename);
+    static std::shared_ptr<GuiImageData> GetImageData(std::string_view filename);
 
-    static uint32_t GetFileSize(const char *filename);
-
-    static GuiImageData *GetImageData(const char *filename);
-
-    static void RemoveImageData(GuiImageData *image);
-
-    static GuiSound *GetSound(const char *filename);
-
-    static void RemoveSound(GuiSound *sound);
+    static std::unique_ptr<GuiSound> GetSound(std::string_view filename);
 
 private:
-    static Resources *instance;
+    static std::unique_ptr<Resources> instance;
 
-    Resources() {}
-
-    ~Resources() {}
-
-    std::map<std::string, std::pair<uint32_t, GuiImageData *>> imageDataMap;
-    std::map<std::string, std::pair<uint32_t, GuiSound *>> soundDataMap;
+    std::map<std::string, std::pair<uint32_t, std::shared_ptr<GuiImageData>>> imageDataMap;
+    std::map<std::string, std::pair<uint32_t, std::shared_ptr<GuiSound>>> soundDataMap;
 };

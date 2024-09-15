@@ -114,47 +114,7 @@ GameIcon::~GameIcon() {
     }
 }
 
-bool GameIcon::checkRayIntersection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirFrac) {
-    //! since we always face the camera we can just check the AABB intersection
-    //! otherwise an OOB intersection would be required
-
-    float currPosX   = getCenterX() * Application::instance()->getVideo()->getWidthScaleFactor() * 2.0f;
-    float currPosY   = getCenterY() * Application::instance()->getVideo()->getHeightScaleFactor() * 2.0f;
-    float currPosZ   = getDepth() * Application::instance()->getVideo()->getDepthScaleFactor() * 2.0f;
-    float currScaleX = getScaleX() * (float) getWidth() * Application::instance()->getVideo()->getWidthScaleFactor();
-    float currScaleY = getScaleY() * (float) getHeight() * Application::instance()->getVideo()->getHeightScaleFactor();
-    float currScaleZ = getScaleZ() * (float) getWidth() * Application::instance()->getVideo()->getDepthScaleFactor();
-    //! lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
-    glm::vec3 lb(currPosX - currScaleX, currPosY - currScaleY, currPosZ - currScaleZ);
-    glm::vec3 rt(currPosX + currScaleX, currPosY + currScaleY, currPosZ + currScaleZ);
-
-    float t1 = (lb.x - rayOrigin.x) * rayDirFrac.x;
-    float t2 = (rt.x - rayOrigin.x) * rayDirFrac.x;
-    float t3 = (lb.y - rayOrigin.y) * rayDirFrac.y;
-    float t4 = (rt.y - rayOrigin.y) * rayDirFrac.y;
-    float t5 = (lb.z - rayOrigin.z) * rayDirFrac.z;
-    float t6 = (rt.z - rayOrigin.z) * rayDirFrac.z;
-
-    float tmin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
-    float tmax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
-
-    //! if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behing us
-    if (tmax < 0) {
-        //t = tmax;
-        return false;
-    }
-
-    //! if tmin > tmax, ray doesn't intersect AABB
-    if (tmin > tmax) {
-        //t = tmax;
-        return false;
-    }
-
-    //t = tmin;
-    return true;
-}
-
-void GameIcon::draw(CVideo *pVideo, const glm::mat4 &projectionMtx, const glm::mat4 &viewMtx, const glm::mat4 &modelView) {
+void GameIcon::drawEx(CVideo *pVideo, const glm::mat4 &projectionMtx, const glm::mat4 &viewMtx, const glm::mat4 &modelView) {
     if (imageData == nullptr) {
         return;
     }

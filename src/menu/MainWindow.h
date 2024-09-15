@@ -33,69 +33,69 @@ public:
 
     virtual ~MainWindow();
 
-    void appendTv(GuiElement *e) {
+    void appendTv(std::shared_ptr<GuiElement> e) {
         if (!e)
             return;
 
-        removeTv(e);
-        tvElements.push_back(e);
+        removeTvByPtr(e.get());
+        tvElements.push_back(std::move(e));
     }
 
-    void appendDrc(GuiElement *e) {
+    void appendDrc(std::shared_ptr<GuiElement> e) {
         if (!e)
             return;
 
-        removeDrc(e);
-        drcElements.push_back(e);
+        removeDrcByPtr(e.get());
+        drcElements.push_back(std::move(e));
     }
 
-    void append(GuiElement *e) {
+    void append(const std::shared_ptr<GuiElement> &e) {
         appendTv(e);
         appendDrc(e);
     }
 
-    void insertTv(uint32_t pos, GuiElement *e) {
+    void insertTv(uint32_t pos, const std::shared_ptr<GuiElement> &e) {
         if (!e)
             return;
 
-        removeTv(e);
+        removeTvByPtr(e.get());
         tvElements.insert(tvElements.begin() + pos, e);
     }
 
-    void insertDrc(uint32_t pos, GuiElement *e) {
+    void insertDrc(uint32_t pos, const std::shared_ptr<GuiElement> &e) {
         if (!e)
             return;
 
-        removeDrc(e);
+        removeDrcByPtr(e.get());
         drcElements.insert(drcElements.begin() + pos, e);
     }
 
-    void insert(uint32_t pos, GuiElement *e) {
+    void insert(uint32_t pos, const std::shared_ptr<GuiElement> &e) {
         insertTv(pos, e);
         insertDrc(pos, e);
     }
 
-    void removeTv(GuiElement *e) {
+    void removeTvByPtr(GuiElement *e) {
         for (uint32_t i = 0; i < tvElements.size(); ++i) {
-            if (e == tvElements[i]) {
+            if (e == tvElements[i].get()) {
                 tvElements.erase(tvElements.begin() + i);
                 break;
             }
         }
     }
 
-    void removeDrc(GuiElement *e) {
+    void removeDrcByPtr(GuiElement *e) {
         for (uint32_t i = 0; i < drcElements.size(); ++i) {
-            if (e == drcElements[i]) {
+            if (e == drcElements[i].get()) {
                 drcElements.erase(drcElements.begin() + i);
                 break;
             }
         }
     }
 
-    void remove(GuiElement *e) {
-        removeTv(e);
-        removeDrc(e);
+    void removeByPtr(GuiElement *e) {
+        removeTvByPtr(e);
+        removeDrcByPtr(e);
     }
 
     void removeAll() {
@@ -103,11 +103,11 @@ public:
         drcElements.clear();
     }
 
-    void drawDrc(CVideo *video);
+    void drawDrc(const CVideo &video);
 
-    void drawTv(CVideo *video);
+    void drawTv(const CVideo &video);
 
-    void update(GuiController *controller);
+    void update(const GuiController &controller);
 
     void updateEffects();
 
@@ -122,7 +122,7 @@ public:
     }
 
 private:
-    void SetupMainView(void);
+    void SetupMainView();
 
     void OnOpenEffectFinish(GuiElement *element);
 
@@ -151,19 +151,16 @@ private:
     void OnGameTitleAdded(gameInfo *info);
 
     int32_t width, height;
-    std::vector<GuiElement *> drcElements;
-    std::vector<GuiElement *> tvElements;
+    std::vector<std::shared_ptr<GuiElement>> drcElements;
+    std::vector<std::shared_ptr<GuiElement>> tvElements;
 
-    GuiSound *gameClickSound;
+    std::shared_ptr<MainDrcButtonsFrame> mainSwitchButtonFrame;
 
-    MainDrcButtonsFrame *mainSwitchButtonFrame;
+    std::shared_ptr<GuiTitleBrowser> currentTvFrame;
+    std::shared_ptr<GuiTitleBrowser> currentDrcFrame;
 
-    GuiTitleBrowser *currentTvFrame;
-    GuiTitleBrowser *currentDrcFrame;
-
-    GuiImageData *pointerImgData[4];
-    GuiImage *pointerImg[4];
-    bool pointerValid[4];
+    std::array<std::unique_ptr<GuiImage>, 4> pointerImg;
+    bool pointerValid[4] = {};
 
     GameList gameList;
 

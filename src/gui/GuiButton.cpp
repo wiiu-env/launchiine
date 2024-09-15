@@ -58,32 +58,32 @@ GuiButton::GuiButton(float w, float h) {
 GuiButton::~GuiButton() {
 }
 
-void GuiButton::setImage(GuiImage *img) {
-    image = img;
+void GuiButton::setImage(std::shared_ptr<GuiImage> img) {
+    image = std::move(img);
     if (img) { img->setParent(this); }
 }
 
-void GuiButton::setImageOver(GuiImage *img) {
+void GuiButton::setImageOver(std::shared_ptr<GuiImage> img) {
     imageOver = img;
     if (img) { img->setParent(this); }
 }
 
-void GuiButton::setImageHold(GuiImage *img) {
+void GuiButton::setImageHold(std::shared_ptr<GuiImage> img) {
     imageHold = img;
     if (img) { img->setParent(this); }
 }
 
-void GuiButton::setImageClick(GuiImage *img) {
+void GuiButton::setImageClick(std::shared_ptr<GuiImage> img) {
     imageClick = img;
     if (img) { img->setParent(this); }
 }
 
-void GuiButton::setIcon(GuiImage *img) {
+void GuiButton::setIcon(std::shared_ptr<GuiImage> img) {
     icon = img;
     if (img) { img->setParent(this); }
 }
 
-void GuiButton::setIconOver(GuiImage *img) {
+void GuiButton::setIconOver(std::shared_ptr<GuiImage> img) {
     iconOver = img;
     if (img) { img->setParent(this); }
 }
@@ -108,16 +108,16 @@ void GuiButton::setLabelClick(GuiText *txt, int32_t n) {
     if (txt) { txt->setParent(this); }
 }
 
-void GuiButton::setSoundOver(GuiSound *snd) {
-    soundOver = snd;
+void GuiButton::setSoundOver(std::unique_ptr<GuiSound> snd) {
+    soundOver = std::move(snd);
 }
 
-void GuiButton::setSoundHold(GuiSound *snd) {
-    soundHold = snd;
+void GuiButton::setSoundHold(std::unique_ptr<GuiSound>snd) {
+    soundHold = std::move(snd);
 }
 
-void GuiButton::setSoundClick(GuiSound *snd) {
-    soundClick = snd;
+void GuiButton::setSoundClick(std::unique_ptr<GuiSound>&& snd) {
+    soundClick = std::move(snd);
 }
 
 void GuiButton::setTrigger(GuiTrigger *t, int32_t idx) {
@@ -142,7 +142,7 @@ void GuiButton::resetState(void) {
 /**
  * Draw the button on screen
  */
-void GuiButton::draw(CVideo *v) {
+void GuiButton::draw(const CVideo& v) {
     if (!this->isVisible()) {
         return;
     }
@@ -172,17 +172,17 @@ void GuiButton::draw(CVideo *v) {
     }
 }
 
-void GuiButton::update(GuiController *c) {
-    if (!c || isStateSet(STATE_DISABLED | STATE_HIDDEN | STATE_DISABLE_INPUT, c->chanIdx)) {
+void GuiButton::update(const GuiController& c) {
+    if (isStateSet(STATE_DISABLED | STATE_HIDDEN | STATE_DISABLE_INPUT, c.chanIdx)) {
         return;
-    } else if (parentElement && (parentElement->isStateSet(STATE_DISABLED | STATE_HIDDEN | STATE_DISABLE_INPUT, c->chanIdx))) {
+    } else if (parentElement && (parentElement->isStateSet(STATE_DISABLED | STATE_HIDDEN | STATE_DISABLE_INPUT, c.chanIdx))) {
         return;
     }
 
     if (selectable) {
-        if (c->data.validPointer && this->isInside(c->data.x, c->data.y)) {
-            if (!isStateSet(STATE_OVER, c->chanIdx)) {
-                setState(STATE_OVER, c->chanIdx);
+        if (c.data.validPointer && this->isInside(c.data.x, c.data.y)) {
+            if (!isStateSet(STATE_OVER, c.chanIdx)) {
+                setState(STATE_OVER, c.chanIdx);
 
                 //if(this->isRumbleActive())
                 //	this->rumble(t->chan);
@@ -200,8 +200,8 @@ void GuiButton::update(GuiController *c) {
 
                 pointedOn(this, c);
             }
-        } else if (isStateSet(STATE_OVER, c->chanIdx)) {
-            this->clearState(STATE_OVER, c->chanIdx);
+        } else if (isStateSet(STATE_OVER, c.chanIdx)) {
+            this->clearState(STATE_OVER, c.chanIdx);
             pointedOff(this, c);
 
             if (effectTarget == effectTargetOver && effectAmount == effectAmountOver) {
@@ -223,28 +223,28 @@ void GuiButton::update(GuiController *c) {
 
             int32_t isClicked = trigger[i]->clicked(c);
 
-            if (!clickedTrigger && (isClicked != GuiTrigger::CLICKED_NONE) && (trigger[i]->isClickEverywhere() || (isStateSet(STATE_SELECTED | STATE_OVER, c->chanIdx) && trigger[i]->isSelectionClickEverywhere()) || this->isInside(c->data.x, c->data.y))) {
+            if (!clickedTrigger && (isClicked != GuiTrigger::CLICKED_NONE) && (trigger[i]->isClickEverywhere() || (isStateSet(STATE_SELECTED | STATE_OVER, c.chanIdx) && trigger[i]->isSelectionClickEverywhere()) || this->isInside(c.data.x, c.data.y))) {
                 if (soundClick) {
                     soundClick->Play();
                 }
 
                 clickedTrigger = trigger[i];
 
-                if (!isStateSet(STATE_CLICKED, c->chanIdx)) {
+                if (!isStateSet(STATE_CLICKED, c.chanIdx)) {
                     if (isClicked == GuiTrigger::CLICKED_TOUCH) {
-                        setState(STATE_CLICKED_TOUCH, c->chanIdx);
+                        setState(STATE_CLICKED_TOUCH, c.chanIdx);
                     } else {
-                        setState(STATE_CLICKED, c->chanIdx);
+                        setState(STATE_CLICKED, c.chanIdx);
                     }
                 }
 
-                clicked(this, c, trigger[i]);
-            } else if ((isStateSet(STATE_CLICKED, c->chanIdx) || isStateSet(STATE_CLICKED_TOUCH, c->chanIdx)) && (clickedTrigger == trigger[i]) && !isStateSet(STATE_HELD, c->chanIdx) && !trigger[i]->held(c) &&
+                clicked(this, &c, trigger[i]);
+            } else if ((isStateSet(STATE_CLICKED, c.chanIdx) || isStateSet(STATE_CLICKED_TOUCH, c.chanIdx)) && (clickedTrigger == trigger[i]) && !isStateSet(STATE_HELD, c.chanIdx) && !trigger[i]->held(c) &&
                        ((isClicked == GuiTrigger::CLICKED_NONE) || trigger[i]->released(c))) {
-                if ((isStateSet(STATE_CLICKED_TOUCH, c->chanIdx) && this->isInside(c->data.x, c->data.y)) || (isStateSet(STATE_CLICKED, c->chanIdx))) {
-                    clickedTrigger = NULL;
-                    clearState(STATE_CLICKED, c->chanIdx);
-                    released(this, c, trigger[i]);
+                if ((isStateSet(STATE_CLICKED_TOUCH, c.chanIdx) && this->isInside(c.data.x, c.data.y)) || (isStateSet(STATE_CLICKED, c.chanIdx))) {
+                    clickedTrigger = nullptr;
+                    clearState(STATE_CLICKED, c.chanIdx);
+                    released(this, &c, trigger[i]);
                 }
             }
         }
@@ -252,23 +252,23 @@ void GuiButton::update(GuiController *c) {
         if (holdable) {
             bool isHeld = trigger[i]->held(c);
 
-            if ((!heldTrigger || heldTrigger == trigger[i]) && isHeld && (trigger[i]->isHoldEverywhere() || (isStateSet(STATE_SELECTED | STATE_OVER, c->chanIdx) && trigger[i]->isSelectionClickEverywhere()) || this->isInside(c->data.x, c->data.y))) {
+            if ((!heldTrigger || heldTrigger == trigger[i]) && isHeld && (trigger[i]->isHoldEverywhere() || (isStateSet(STATE_SELECTED | STATE_OVER, c.chanIdx) && trigger[i]->isSelectionClickEverywhere()) || this->isInside(c.data.x, c.data.y))) {
                 heldTrigger = trigger[i];
 
-                if (!isStateSet(STATE_HELD, c->chanIdx)) {
-                    setState(STATE_HELD, c->chanIdx);
+                if (!isStateSet(STATE_HELD, c.chanIdx)) {
+                    setState(STATE_HELD, c.chanIdx);
                 }
 
-                held(this, c, trigger[i]);
-            } else if (isStateSet(STATE_HELD, c->chanIdx) && (heldTrigger == trigger[i]) && (!isHeld || trigger[i]->released(c))) {
+                held(this, &c, trigger[i]);
+            } else if (isStateSet(STATE_HELD, c.chanIdx) && (heldTrigger == trigger[i]) && (!isHeld || trigger[i]->released(c))) {
                 //! click is removed at this point and converted to held
                 if (clickedTrigger == trigger[i]) {
-                    clickedTrigger = NULL;
-                    clearState(STATE_CLICKED, c->chanIdx);
+                    clickedTrigger = nullptr;
+                    clearState(STATE_CLICKED, c.chanIdx);
                 }
-                heldTrigger = NULL;
-                clearState(STATE_HELD, c->chanIdx);
-                released(this, c, trigger[i]);
+                heldTrigger = nullptr;
+                clearState(STATE_HELD, c.chanIdx);
+                released(this, &c, trigger[i]);
             }
         }
     }

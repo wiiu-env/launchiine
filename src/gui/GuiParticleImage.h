@@ -23,9 +23,9 @@ class GuiParticleImage : public GuiImage, public sigslot::has_slots<> {
 public:
     GuiParticleImage(int32_t w, int32_t h, uint32_t particleCount, float minRadius, float maxRadius, float minSpeed, float maxSpeed);
 
-    virtual ~GuiParticleImage();
+    ~GuiParticleImage() override;
 
-    void draw(CVideo *pVideo) override;
+    void draw(const CVideo &pVideo) override;
 
 private:
     float *posVertexs;

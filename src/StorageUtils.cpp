@@ -1,8 +1,8 @@
-#include "utils/logger.h"
-#include <cstdlib>
+
 #include <malloc.h>
 
 #include "StorageUtils.h"
+#include "utils/logger.h"
 
 #include <coreinit/thread.h>
 #include <coreinit/title.h>
@@ -90,15 +90,13 @@ void initExternalStorage() {
         // the lib before actually using it.
         return;
     }
-    int connectedStorage = 0;
-    if ((connectedStorage = numberUSBStorageDevicesConnected()) <= 0) {
-        nn::spm::Initialize();
-        InitEmptyExternalStorage();
-        nn::spm::Finalize();
-        return;
+    int numConnectedStorage;
+    int maxTries = 1200; // Wait up to 20 seconds, like the Wii U Menu
+    if ((numConnectedStorage = numberUSBStorageDevicesConnected()) <= 0) {
+        maxTries = 1; // Only try once if no USBStorageDrive is connected
+    } else {
+        DEBUG_FUNCTION_LINE("Connected StorageDevices = %d", numConnectedStorage);
     }
-
-    DEBUG_FUNCTION_LINE("Connected StorageDevices = %d", connectedStorage);
 
     nn::spm::Initialize();
 
@@ -106,7 +104,7 @@ void initExternalStorage() {
     int tries  = 0;
     bool found = false;
 
-    while (tries < 1200) { // Wait up to 20 seconds, like the Wii U Menu
+    while (tries < maxTries) {
         int32_t numItems = nn::spm::GetStorageList(items, 0x20);
 
         DEBUG_FUNCTION_LINE("Number of items: %d", numItems);
@@ -127,7 +125,7 @@ void initExternalStorage() {
                 }
             }
         }
-        if (found || (connectedStorage == numItems)) {
+        if (found || (numConnectedStorage == numItems)) {
             DEBUG_FUNCTION_LINE("Found all expected items, breaking.");
             break;
         }
@@ -135,7 +133,10 @@ void initExternalStorage() {
         tries++;
     }
     if (!found) {
-        DEBUG_FUNCTION_LINE("USB Storage is connected but either it doesn't have a WFS partition or we ran into a timeout.");
+        if (numConnectedStorage > 0) {
+            DEBUG_FUNCTION_LINE(
+                    "USB Storage is connected but either it doesn't have a WFS partition or we ran into a timeout.");
+        }
         InitEmptyExternalStorage();
     }
 

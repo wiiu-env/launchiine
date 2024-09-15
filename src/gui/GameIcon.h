@@ -6,22 +6,22 @@
 
 class GameIcon : public GuiImage {
 public:
-    GameIcon(GuiImageData *preloadImage);
+    explicit GameIcon(GuiImageData *preloadImage);
 
-    virtual ~GameIcon();
+    ~GameIcon() override;
 
     void setRotationX(float r) {
         rotationX = r;
     }
 
-    void setColorIntensity(const glm::vec4 &color) {
+    void setColorIntensity(const glm::vec4 &color) override {
         colorIntensity                   = color;
         colorIntensityMirror             = colorIntensity;
         selectionBlurOuterColorIntensity = color * glm::vec4(0.09411764f * 1.15f, 0.56862745f * 1.15f, 0.96862745098f * 1.15f, 1.0f);
         selectionBlurInnerColorIntensity = color * glm::vec4(0.46666667f, 0.90588235f, 1.0f, 1.0f);
     }
 
-    const glm::vec4 &getColorIntensity() const {
+    [[nodiscard]] const glm::vec4 &getColorIntensity() const {
         return colorIntensity;
     }
 
@@ -49,14 +49,12 @@ public:
         bIconLast = enable;
     }
 
-    void draw(CVideo *pVideo) {
+    void draw(CVideo *pVideo) override {
         static const glm::mat4 identity(1.0f);
-        draw(pVideo, identity, identity, identity);
+        drawEx(pVideo, identity, identity, identity);
     }
 
-    void draw(CVideo *pVideo, const glm::mat4 &projection, const glm::mat4 &view, const glm::mat4 &modelView);
-
-    bool checkRayIntersection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirFrac);
+    void drawEx(CVideo *pVideo, const glm::mat4 &projection, const glm::mat4 &view, const glm::mat4 &modelView);
 
 private:
     enum eRenderState {

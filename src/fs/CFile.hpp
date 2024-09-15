@@ -1,9 +1,10 @@
 #ifndef CFILE_HPP_
 #define CFILE_HPP_
 
+#include <cstdio>
+#include <cstring>
 #include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
+#include <span>
 #include <string>
 #include <unistd.h>
 #include <wut_types.h>
@@ -21,13 +22,13 @@ public:
 
     CFile(const std::string &filepath, eOpenTypes mode);
 
-    CFile(const uint8_t *memory, int32_t memsize);
+    CFile(std::span<const uint8_t> data);
 
     virtual ~CFile();
 
     int32_t open(const std::string &filepath, eOpenTypes mode);
 
-    int32_t open(const uint8_t *memory, int32_t memsize);
+    int32_t open(std::span<const uint8_t> data);
 
     BOOL isOpen() const {
         if (iFd >= 0) {

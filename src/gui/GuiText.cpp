@@ -247,7 +247,7 @@ void GuiText::setPresets(int32_t sz, const glm::vec4 &c, int32_t w, int32_t a) {
     presetAlignment = a;
 }
 
-void GuiText::setPresetFont(FreeTypeGX *f) {
+void GuiText::setPresetFont(std::shared_ptr<FreeTypeGX> f) {
     presentFont = f;
 }
 
