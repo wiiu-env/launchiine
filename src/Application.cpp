@@ -3,7 +3,6 @@
 #include "resources/Resources.h"
 #include "utils/AsyncExecutor.h"
 #include "utils/logger.h"
-#include "utils/SplashSoundPlayer.h"
 #include <coreinit/core.h>
 #include <coreinit/foreground.h>
 #include <coreinit/title.h>
