@@ -154,11 +154,12 @@ void initExternalStorage() {
 
     nn::spm::Finalize();
 }
-Application * Application::applicationInstance = nullptr;
-bool Application::exitApplication = false;
-bool Application::quitRequest = false;
+Application *Application::applicationInstance = nullptr;
+bool Application::exitApplication             = false;
+bool Application::quitRequest                 = false;
 
-Application::Application(): CThread(CThread::eAttributeAffCore1 | CThread::eAttributePinnedAff, 0, 0x800000), bgMusic(nullptr), video(nullptr), mainWindow(nullptr), fontSystem(nullptr), exitCode(0) {
+Application::Application()
+    : CThread(CThread::eAttributeAffCore1 | CThread::eAttributePinnedAff, 0, 0x800000), bgMusic(nullptr), video(nullptr), mainWindow(nullptr), fontSystem(nullptr), exitCode(0) {
     controller[0] = new VPadController(GuiTrigger::CHANNEL_1);
     controller[1] = new WPadController(GuiTrigger::CHANNEL_2);
     controller[2] = new WPadController(GuiTrigger::CHANNEL_3);
@@ -167,13 +168,11 @@ Application::Application(): CThread(CThread::eAttributeAffCore1 | CThread::eAttr
 
     //! create bgMusic
     bgMusic = new GuiSound(Resources::GetFile("bgMusic.ogg"), Resources::GetFileSize("bgMusic.ogg"));
-    bgMusic -> SetLoop(true);
-    bgMusic -> Play();
-    bgMusic -> SetVolume(50);
+    bgMusic->SetLoop(true);
+    bgMusic->Play();
+    bgMusic->SetVolume(50);
 
-    AsyncExecutor::execute([] {
-        DEBUG_FUNCTION_LINE("Hello");
-    });
+    AsyncExecutor::execute([] { DEBUG_FUNCTION_LINE("Hello"); });
 
     exitApplication = false;
 
@@ -186,7 +185,7 @@ Application::~Application() {
 
     DEBUG_FUNCTION_LINE("Destroy controller");
 
-    for (auto & i: controller) {
+    for (auto &i : controller) {
         delete i;
     }
 
@@ -212,20 +211,13 @@ int32_t Application::exec() {
 }
 
 void Application::quit(int32_t code) {
-    exitCode = code;
+    exitCode        = code;
     exitApplication = true;
-    quitRequest = true;
+    quitRequest     = true;
 }
 
 void Application::fadeOut() {
-    GuiImage fadeOut(video->getTvWidth(), video->getTvHeight(), (GX2Color) {
-        0,
-        0,
-        0,
-        255
-    });
-
-glm::mat4 identityMatrix(1.0f);
+    GuiImage fadeOut(video->getTvWidth(), video->getTvHeight(), (GX2Color){0, 0, 0, 255});
 
     for (int32_t i = 0; i < 255; i += 10) {
         if (i > 255)
@@ -234,30 +226,30 @@ glm::mat4 identityMatrix(1.0f);
         fadeOut.setAlpha(i / 255.0f);
 
         //! start rendering DRC
-        video -> prepareDrcRendering();
-        mainWindow -> drawDrc(video);
+        video->prepareDrcRendering();
+        mainWindow->drawDrc(video);
 
         GX2SetDepthOnlyControl(GX2_DISABLE, GX2_DISABLE, GX2_COMPARE_FUNC_ALWAYS);
-        fadeOut.draw(video, identityMatrix);
+        fadeOut.draw(video);
         GX2SetDepthOnlyControl(GX2_ENABLE, GX2_ENABLE, GX2_COMPARE_FUNC_LEQUAL);
 
-        video -> drcDrawDone();
+        video->drcDrawDone();
 
         //! start rendering TV
-        video -> prepareTvRendering();
+        video->prepareTvRendering();
 
-        mainWindow -> drawTv(video);
+        mainWindow->drawTv(video);
 
         GX2SetDepthOnlyControl(GX2_DISABLE, GX2_DISABLE, GX2_COMPARE_FUNC_ALWAYS);
-        fadeOut.draw(video, identityMatrix);
+        fadeOut.draw(video);
         GX2SetDepthOnlyControl(GX2_ENABLE, GX2_ENABLE, GX2_COMPARE_FUNC_LEQUAL);
 
-        video -> tvDrawDone();
+        video->tvDrawDone();
 
         //! as last point update the effects as it can drop elements
-        mainWindow -> updateEffects();
+        mainWindow->updateEffects();
 
-        video -> waitForVSync();
+        video->waitForVSync();
     }
 }
 
@@ -265,63 +257,63 @@ bool Application::procUI() {
     bool executeProcess = false;
 
     switch (ProcUIProcessMessages(true)) {
-    case PROCUI_STATUS_EXITING: {
-        DEBUG_FUNCTION_LINE("PROCUI_STATUS_EXITING");
-        exitCode = EXIT_SUCCESS;
-        exitApplication = true;
-        break;
-    }
-    case PROCUI_STATUS_RELEASE_FOREGROUND: {
-        DEBUG_FUNCTION_LINE("PROCUI_STATUS_RELEASE_FOREGROUND");
-        if (video != nullptr) {
-            // we can turn ofF the screen but we don't need to and it will display the last image
-            video -> tvEnable(true);
-            video -> drcEnable(true);
-
-            DEBUG_FUNCTION_LINE("delete fontSystem");
-            delete fontSystem;
-            fontSystem = nullptr;
-
-            DEBUG_FUNCTION_LINE("delete video");
-            delete video;
-            video = nullptr;
-
-            DEBUG_FUNCTION_LINE("deinitialze memory");
-            libgui_memoryRelease();
-            ProcUIDrawDoneRelease();
-        } else {
-            ProcUIDrawDoneRelease();
+        case PROCUI_STATUS_EXITING: {
+            DEBUG_FUNCTION_LINE("PROCUI_STATUS_EXITING");
+            exitCode        = EXIT_SUCCESS;
+            exitApplication = true;
+            break;
         }
-        break;
-    }
-    case PROCUI_STATUS_IN_FOREGROUND: {
-        if (!quitRequest) {
-            if (video == nullptr) {
-                DEBUG_FUNCTION_LINE("PROCUI_STATUS_IN_FOREGROUND");
-                DEBUG_FUNCTION_LINE("initialze memory");
-                libgui_memoryInitialize();
+        case PROCUI_STATUS_RELEASE_FOREGROUND: {
+            DEBUG_FUNCTION_LINE("PROCUI_STATUS_RELEASE_FOREGROUND");
+            if (video != nullptr) {
+                // we can turn ofF the screen but we don't need to and it will display the last image
+                video->tvEnable(true);
+                video->drcEnable(true);
 
-                DEBUG_FUNCTION_LINE("Initialize video");
-                video = new CVideo(GX2_TV_SCAN_MODE_720P, GX2_DRC_RENDER_MODE_SINGLE);
-                DEBUG_FUNCTION_LINE("Video size %i x %i", video -> getTvWidth(), video -> getTvHeight());
+                DEBUG_FUNCTION_LINE("delete fontSystem");
+                delete fontSystem;
+                fontSystem = nullptr;
 
-                //! setup default Font
-                DEBUG_FUNCTION_LINE("Initialize main font system");
-                auto * fontSystem = new FreeTypeGX(Resources::GetFile("font.ttf"), Resources::GetFileSize("font.ttf"), true);
-                GuiText::setPresetFont(fontSystem);
+                DEBUG_FUNCTION_LINE("delete video");
+                delete video;
+                video = nullptr;
 
-                if (mainWindow == nullptr) {
-                    DEBUG_FUNCTION_LINE("Initialize main window");
-                    mainWindow = new MainWindow(video -> getTvWidth(), video -> getTvHeight());
-                }
+                DEBUG_FUNCTION_LINE("deinitialze memory");
+                libgui_memoryRelease();
+                ProcUIDrawDoneRelease();
+            } else {
+                ProcUIDrawDoneRelease();
             }
-            executeProcess = true;
+            break;
         }
-        break;
-    }
-    case PROCUI_STATUS_IN_BACKGROUND:
-    default:
-        break;
+        case PROCUI_STATUS_IN_FOREGROUND: {
+            if (!quitRequest) {
+                if (video == nullptr) {
+                    DEBUG_FUNCTION_LINE("PROCUI_STATUS_IN_FOREGROUND");
+                    DEBUG_FUNCTION_LINE("initialze memory");
+                    libgui_memoryInitialize();
+
+                    DEBUG_FUNCTION_LINE("Initialize video");
+                    video = new CVideo(GX2_TV_SCAN_MODE_720P, GX2_DRC_RENDER_MODE_SINGLE);
+                    DEBUG_FUNCTION_LINE("Video size %i x %i", video->getTvWidth(), video->getTvHeight());
+
+                    //! setup default Font
+                    DEBUG_FUNCTION_LINE("Initialize main font system");
+                    auto *fontSystem = new FreeTypeGX(Resources::GetFile("font.ttf"), Resources::GetFileSize("font.ttf"), true);
+                    GuiText::setPresetFont(fontSystem);
+
+                    if (mainWindow == nullptr) {
+                        DEBUG_FUNCTION_LINE("Initialize main window");
+                        mainWindow = new MainWindow(video->getTvWidth(), video->getTvHeight());
+                    }
+                }
+                executeProcess = true;
+            }
+            break;
+        }
+        case PROCUI_STATUS_IN_BACKGROUND:
+        default:
+            break;
     }
 
     return executeProcess;
@@ -336,43 +328,43 @@ void Application::executeThread() {
             continue;
         }
 
-        mainWindow -> lockGUI();
-        mainWindow -> process();
+        mainWindow->lockGUI();
+        mainWindow->process();
 
         //! Read out inputs
-        for (auto & i: controller) {
-            if (!i -> update(video -> getTvWidth(), video -> getTvHeight()))
+        for (auto &i : controller) {
+            if (!i->update(video->getTvWidth(), video->getTvHeight()))
                 continue;
 
             //! update controller states
-            mainWindow -> update(i);
+            mainWindow->update(i);
         }
 
         //! start rendering DRC
-        video -> prepareDrcRendering();
-        mainWindow -> drawDrc(video);
-        video -> drcDrawDone();
+        video->prepareDrcRendering();
+        mainWindow->drawDrc(video);
+        video->drcDrawDone();
 
         //! start rendering TV
-        video -> prepareTvRendering();
-        mainWindow -> drawTv(video);
-        video -> tvDrawDone();
+        video->prepareTvRendering();
+        mainWindow->drawTv(video);
+        video->tvDrawDone();
 
         //! enable screen after first frame render
-        if (video -> getFrameCount() == 0) {
-            video -> tvEnable(true);
-            video -> drcEnable(true);
+        if (video->getFrameCount() == 0) {
+            video->tvEnable(true);
+            video->drcEnable(true);
         }
 
         //! as last point update the effects as it can drop elements
-        mainWindow -> updateEffects();
-        mainWindow -> unlockGUI();
+        mainWindow->updateEffects();
+        mainWindow->unlockGUI();
 
-        video -> waitForVSync();
+        video->waitForVSync();
     }
 
     if (bgMusic) {
-        bgMusic -> SetVolume(0);
+        bgMusic->SetVolume(0);
     }
 
     DEBUG_FUNCTION_LINE("delete mainWindow");
@@ -389,5 +381,4 @@ void Application::executeThread() {
 
     DEBUG_FUNCTION_LINE("deinitialize memory");
     libgui_memoryRelease();
-
 }
