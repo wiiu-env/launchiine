@@ -23,7 +23,7 @@ A simple Wii U Menu replacement, still in early development and not ready for a 
 - Display applets like the original Wii U Menu 
 - Implement Account selection when no default account is set. 
 - Implement update check/no way to update games
-- Properly implement `nn::spm` and `nn:sl` (external storage and quick start menu)
+- Properly implement `nn::spm` and `nn::sl` (external storage and quick start menu)
 - Fix search
 - Implement all the other stuff the Wii U Menu offers (Account creationg, switching between Accounts, set default account etc.)
 - Implement ways to launch the original Wii U Menu.
