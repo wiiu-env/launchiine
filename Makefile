@@ -41,7 +41,7 @@ CFLAGS	:=	-g -Wall -O2 -ffunction-sections \
 
 CFLAGS	+=	$(INCLUDE) -D__WIIU__ -D__WUT__
 
-CXXFLAGS	:= $(CFLAGS)
+CXXFLAGS	:= $(CFLAGS) -std=c++20
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-g $(ARCH) $(RPXSPECS) -Wl,-Map,$(notdir $*.map)
