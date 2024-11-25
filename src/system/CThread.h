@@ -1,16 +1,16 @@
-#ifndef CTHREAD_H
-#define CTHREAD_H
+#ifndef LAUNCH_THREAD_H
+#define LAUNCH_THREAD_H
 
 #include <coreinit/thread.h>
 #include <malloc.h>
 #include <unistd.h>
 
-class CThread {
+class LaunchThread {
 public:
-    typedef void (*Callback)(CThread *thread, void *arg);
+    typedef void (*Callback)(LaunchThread *thread, void *arg);
 
     //! constructor
-    CThread(int32_t iAttr, int32_t iPriority = 16, int32_t iStackSize = 0x8000, CThread::Callback callback = nullptr, void *callbackArg = nullptr)
+    LaunchThread(int32_t iAttr, int32_t iPriority = 16, int32_t iStackSize = 0x8000, LaunchThread::Callback callback = nullptr, void *callbackArg = nullptr)
         : pThread(nullptr), pThreadStack(nullptr), pCallback(callback), pCallbackArg(callbackArg) {
         //! save attribute assignment
         iAttributes = iAttr;
@@ -20,16 +20,16 @@ public:
         pThreadStack = (uint8_t *) memalign(0x20, iStackSize);
         //! create the thread
         if (pThread && pThreadStack)
-            OSCreateThread(pThread, &CThread::threadCallback, 1, (char *) this, pThreadStack + iStackSize, iStackSize, iPriority, iAttributes);
+            OSCreateThread(pThread, &LaunchThread::threadCallback, 1, (char *) this, pThreadStack + iStackSize, iStackSize, iPriority, iAttributes);
     }
 
     //! destructor
-    virtual ~CThread() {
+    virtual ~LaunchThread() {
         shutdownThread();
     }
 
-    static CThread *create(CThread::Callback callback, void *callbackArg, int32_t iAttr = eAttributeNone, int32_t iPriority = 16, int32_t iStackSize = 0x8000) {
-        return (new CThread(iAttr, iPriority, iStackSize, callback, callbackArg));
+    static LaunchThread *create(LaunchThread::Callback callback, void *callbackArg, int32_t iAttr = eAttributeNone, int32_t iPriority = 16, int32_t iStackSize = 0x8000) {
+        return (new LaunchThread(iAttr, iPriority, iStackSize, callback, callbackArg));
     }
 
     //! Get thread ID
@@ -107,7 +107,7 @@ public:
 private:
     static int32_t threadCallback(int32_t argc, const char **argv) {
         //! After call to start() continue with the internal function
-        ((CThread *) argv)->executeThread();
+        ((LaunchThread *) argv)->executeThread();
         return 0;
     }
     int32_t iAttributes;

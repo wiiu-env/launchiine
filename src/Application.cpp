@@ -159,7 +159,7 @@ bool Application::exitApplication             = false;
 bool Application::quitRequest                 = false;
 
 Application::Application()
-    : CThread(CThread::eAttributeAffCore1 | CThread::eAttributePinnedAff, 0, 0x800000), bgMusic(nullptr), video(nullptr), mainWindow(nullptr), fontSystem(nullptr), exitCode(0) {
+    : LaunchThread(LaunchThread::eAttributeAffCore1 | LaunchThread::eAttributePinnedAff, 0, 0x800000), bgMusic(nullptr), video(nullptr), mainWindow(nullptr), fontSystem(nullptr), exitCode(0) {
     controller[0] = new VPadController(GuiTrigger::CHANNEL_1);
     controller[1] = new WPadController(GuiTrigger::CHANNEL_2);
     controller[2] = new WPadController(GuiTrigger::CHANNEL_3);

@@ -1,5 +1,5 @@
-#ifndef ICON_MODEL_H_
-#define ICON_MODEL_H_
+#ifndef ICON_MODEL_H
+#define ICON_MODEL_H
 
 // clang-format off
 static const float cfGameIconPosVtxs[] = {

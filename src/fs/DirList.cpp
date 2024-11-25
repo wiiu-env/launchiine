@@ -28,7 +28,6 @@
 #include <strings.h>
 #include <sys/dirent.h>
 #include <sys/stat.h>
-
 #include "fs/DirList.h"
 #include "utils/StringTools.h"
 
