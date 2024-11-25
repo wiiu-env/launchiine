@@ -1,4 +1,6 @@
 #include "UpdateCheck.h"
+#include <cstring>
+#include <string>
 
 const char* UpdateCheck::UPDATE_HOST = "raw.githubusercontent.com";
 const char* UpdateCheck::UPDATE_PATH = "/rpdistiso/launchiine/main/version.txt";
