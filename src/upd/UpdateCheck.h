@@ -1,8 +1,9 @@
 #ifndef UPDATE_CHECK_H
 #define UPDATE_CHECK_H
 
-#include <nsysnet/socket.h>
-#include <coreinit/debug.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <string>
 
 class UpdateCheck {
