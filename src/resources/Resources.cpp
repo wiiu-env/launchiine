@@ -7,7 +7,6 @@
 #include <malloc.h>
 #include <string.h>
 #include <string>
-
 #include <chrono>
 #include <future>
 #include <iostream>

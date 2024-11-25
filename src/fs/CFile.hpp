@@ -1,5 +1,5 @@
-#ifndef CFILE_HPP_
-#define CFILE_HPP_
+#ifndef CFILE_HPP
+#define CFILE_HPP
 
 #include <fcntl.h>
 #include <stdio.h>

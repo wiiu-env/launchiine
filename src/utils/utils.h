@@ -1,5 +1,5 @@
-#ifndef __UTILS_H_
-#define __UTILS_H_
+#ifndef __UTILS_H
+#define __UTILS_H
 
 #include <malloc.h>
 
@@ -33,4 +33,4 @@ void dumpHex(const void *data, size_t size);
 }
 #endif
 
-#endif // __UTILS_H_
+#endif // __UTILS_H

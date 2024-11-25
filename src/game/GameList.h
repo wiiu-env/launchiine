@@ -1,5 +1,5 @@
-#ifndef GAME_LIST_H_
-#define GAME_LIST_H_
+#ifndef GAME_LIST_H
+#define GAME_LIST_H
 
 #include <coreinit/cache.h>
 #include <coreinit/mcp.h>
