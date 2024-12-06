@@ -20,7 +20,7 @@ public:
 
     void update(GuiController *t);
 
-    void draw(CVideo *pVideo);
+    void draw(CVideo *pVideo) override;
 
     void process();
 
