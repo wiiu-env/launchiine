@@ -409,7 +409,6 @@ void MainWindow::OnGameLaunch(uint64_t titleId) {
         titleId == 0x000500301001420AL) {
         DEBUG_FUNCTION_LINE("Launching the Eshop");
         SYSSwitchToEShop(nullptr);
-
         return;
     }
     if (titleId == 0x000500301001800AL ||
@@ -447,7 +446,7 @@ void MainWindow::OnGameLaunch(uint64_t titleId) {
     MCP_Close(handle);
     if (err == 0) {
         ACPAssignTitlePatch(&titleInfo);
-        _SYSLaunchTitleWithStdArgsInNoSplash(titleId, nullptr);
+        _SYSLaunchTitleByPathFromLauncher(titleInfo.path, strlen(titleInfo.path));
         return;
     }
 
