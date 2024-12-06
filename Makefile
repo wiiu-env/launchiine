@@ -27,7 +27,8 @@ SOURCES		:=	src \
 				src/resources \
 				src/system \
 				src/utils \
-				src/upd
+				src/upd \
+				src/curl
 DATA		:=	data \
 				data/images \
 				data/sounds \
@@ -106,7 +107,7 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 all: $(BUILD)
 
 $(BUILD):
-	@[ -d $@ ] || mkdir -p $@
+	@$(shell [ ! -d $(BUILD) ] && mkdir -p $(BUILD))
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #-------------------------------------------------------------------------------
