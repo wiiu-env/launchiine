@@ -48,7 +48,7 @@ CXXFLAGS	:= $(CFLAGS) -std=c++20
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-g $(ARCH) $(RPXSPECS) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:=  -lgui -lfreetype -lgd -lpng -ljpeg -lz -lmad -lvorbisidec -logg -lbz2 -lwut -lnsysnet
+LIBS	:=  -lgui -lfreetype -lgd -lpng -ljpeg -lz -lmad -lvorbisidec -logg -lbz2 -lwut
 
 #-------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level
