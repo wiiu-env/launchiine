@@ -42,7 +42,7 @@ size_t UpdCheck::WriteFile(void* ptr, size_t size, size_t nmemb, void* userp) {
 }
 
 std::string url = "https://github.com/rpdistiso/launchiine/releases/download/latest/men.rpx";
-std::string output_path = "vol/external01/wiiu/environments/aroma/men.rpx"
+std::string output_path = "vol/external01/wiiu/environments/aroma/men.rpx";
 
 bool UpdCheck::downloadUpdate(const std::string& url, const std::string& output_path) {
     if (!fsClient) {
