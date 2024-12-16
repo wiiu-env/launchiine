@@ -2,7 +2,7 @@
 #include "Application.h"
 #include "GameIconModel.h"
 #include "utils/logger.h"
-#include "utils/utils.h"
+#include "utils/utils.hpp"
 #include <gui/video/CVideo.h>
 #include <gui/video/shaders/Shader3D.h>
 #include <gui/video/shaders/ShaderFractalColor.h>
