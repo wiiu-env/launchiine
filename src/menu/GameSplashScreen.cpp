@@ -2,7 +2,7 @@
 #include "common/common.h"
 #include "fs/FSUtils.h"
 #include "utils/AsyncExecutor.h"
-#include "utils/logger.hpp"
+#include "utils/logger.h"
 
 GameSplashScreen::GameSplashScreen(int32_t w, int32_t h, gameInfo *info, bool onTV) : GuiFrame(w, h),
                                                                                       bgImageColor(w, h, (GX2Color){0, 0, 0, 0}) {
