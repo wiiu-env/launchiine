@@ -1,8 +1,10 @@
 #include "GameIcon.h"
 #include "Application.h"
 #include "GameIconModel.h"
+
 #include "utils/logger.h"
 #include "utils/utils.hpp"
+
 #include <gui/video/CVideo.h>
 #include <gui/video/shaders/Shader3D.h>
 #include <gui/video/shaders/ShaderFractalColor.h>
@@ -178,8 +180,8 @@ void GameIcon::draw(CVideo *pVideo, const glm::mat4 &projectionMtx, const glm::m
             //! Reflection render
             if (!bRenderReflection)
                 continue;
-            m_iconView = glm::translate(modelView, glm::vec3(currPosX, -currScaleY * 2.0f - currPosY, currPosZ + cosf(DegToRad(rotationX)) * currScaleZ * 2.0f));
-            m_iconView = glm::rotate(m_iconView, DegToRad(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+            m_iconView = glm::translate(modelView, glm::vec3(currPosX, -currScaleY * 2.0f - currPosY, currPosZ + cosf(utils::degToRad(rotationX)) * currScaleZ * 2.0f));
+            m_iconView = glm::rotate(m_iconView, utils::degToRad(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
             m_iconView = glm::scale(m_iconView, glm::vec3(currScaleX, -currScaleY, currScaleZ));
 
             colorIntensity[3]                   = reflectionAlpha * getAlpha();
@@ -191,7 +193,7 @@ void GameIcon::draw(CVideo *pVideo, const glm::mat4 &projectionMtx, const glm::m
         } else {
             //! Normal render
             m_iconView = glm::translate(modelView, glm::vec3(currPosX, currPosY, currPosZ));
-            m_iconView = glm::rotate(m_iconView, DegToRad(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+            m_iconView = glm::rotate(m_iconView, utils::degToRad(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
             m_iconView = glm::scale(m_iconView, glm::vec3(currScaleX, currScaleY, currScaleZ));
 
             colorIntensity[3]                   = getAlpha();
