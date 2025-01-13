@@ -1,5 +1,5 @@
-#ifndef _GAME_ICON_H
-#define _GAME_ICON_H
+#ifndef _GAME_ICON_H_
+#define _GAME_ICON_H_
 
 #include <gui/GuiImageAsync.h>
 #include <gui/video/shaders/Shader3D.h>
@@ -92,4 +92,4 @@ private:
     float selectionBlurInnerBorderSize;
 };
 
-#endif // _GAME_ICON_H
+#endif // _GAME_ICON_H_

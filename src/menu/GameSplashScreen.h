@@ -8,11 +8,11 @@ class GameSplashScreen : public GuiFrame, public sigslot::has_slots<> {
 public:
     GameSplashScreen(int32_t w, int32_t h, gameInfo *info, bool onTV);
 
-    ~GameSplashScreen() override;
+    virtual ~GameSplashScreen();
 
     void OnSplashScreenFadeInDone(GuiElement *element);
 
-    void draw(CVideo *v) override;
+    virtual void draw(CVideo *v);
 
     sigslot::signal3<GuiElement *, gameInfo *, bool> gameGameSplashScreenFinished;
 

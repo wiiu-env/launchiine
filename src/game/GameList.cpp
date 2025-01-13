@@ -5,11 +5,13 @@
 #include <nn/acp/title.h>
 #include <string.h>
 #include <string>
+
 #include "GameList.h"
 #include "common/common.h"
 #include "utils/AsyncExecutor.h"
-#include "utils/logger.h"
+
 #include "fs/FSUtils.h"
+#include "utils/logger.h"
 
 GameList::GameList() {
 }

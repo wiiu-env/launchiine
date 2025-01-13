@@ -1,5 +1,5 @@
-#ifndef __FS_UTILS_H
-#define __FS_UTILS_H
+#ifndef __FS_UTILS_H_
+#define __FS_UTILS_H_
 
 #include <wut_types.h>
 
@@ -15,4 +15,4 @@ public:
     static int32_t saveBufferToFile(const char *path, void *buffer, uint32_t size);
 };
 
-#endif // __FS_UTILS_H
+#endif // __FS_UTILS_H_

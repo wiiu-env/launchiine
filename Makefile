@@ -26,9 +26,7 @@ SOURCES		:=	src \
 				src/menu \
 				src/resources \
 				src/system \
-				src/utils \
-				src/upd \
-				src/curl
+				src/utils
 DATA		:=	data \
 				data/images \
 				data/sounds \
@@ -48,7 +46,7 @@ CXXFLAGS	:= $(CFLAGS) -std=c++20
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-g $(ARCH) $(RPXSPECS) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:=  -lgui -lfreetype -lgd -lpng -ljpeg -lz -lmad -lvorbisidec -logg -lbz2 -lwut
+LIBS	:=  -lgui -lfreetype -lgd -lpng -ljpeg -lz -lmad -lvorbisidec -logg -lbz2 -lwut 
 
 #-------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level
@@ -107,7 +105,7 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 all: $(BUILD)
 
 $(BUILD):
-	@$(shell [ ! -d $(BUILD) ] && mkdir -p $(BUILD))
+	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #-------------------------------------------------------------------------------

@@ -1,16 +1,32 @@
-#ifndef LAUNCH_THREAD_H
-#define LAUNCH_THREAD_H
+/****************************************************************************
+ * Copyright (C) 2015 Dimok
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ****************************************************************************/
+#ifndef CTHREAD_H_
+#define CTHREAD_H_
 
 #include <coreinit/thread.h>
 #include <malloc.h>
 #include <unistd.h>
 
-class LaunchThread {
+class CThread {
 public:
-    typedef void (*Callback)(LaunchThread *thread, void *arg);
+    typedef void (*Callback)(CThread *thread, void *arg);
 
     //! constructor
-    LaunchThread(int32_t iAttr, int32_t iPriority = 16, int32_t iStackSize = 0x8000, LaunchThread::Callback callback = nullptr, void *callbackArg = nullptr)
+    CThread(int32_t iAttr, int32_t iPriority = 16, int32_t iStackSize = 0x8000, CThread::Callback callback = nullptr, void *callbackArg = nullptr)
         : pThread(nullptr), pThreadStack(nullptr), pCallback(callback), pCallbackArg(callbackArg) {
         //! save attribute assignment
         iAttributes = iAttr;
@@ -20,16 +36,16 @@ public:
         pThreadStack = (uint8_t *) memalign(0x20, iStackSize);
         //! create the thread
         if (pThread && pThreadStack)
-            OSCreateThread(pThread, &LaunchThread::threadCallback, 1, (char *) this, pThreadStack + iStackSize, iStackSize, iPriority, iAttributes);
+            OSCreateThread(pThread, &CThread::threadCallback, 1, (char *) this, pThreadStack + iStackSize, iStackSize, iPriority, iAttributes);
     }
 
     //! destructor
-    virtual ~LaunchThread() {
+    virtual ~CThread() {
         shutdownThread();
     }
 
-    static LaunchThread *create(LaunchThread::Callback callback, void *callbackArg, int32_t iAttr = eAttributeNone, int32_t iPriority = 16, int32_t iStackSize = 0x8000) {
-        return (new LaunchThread(iAttr, iPriority, iStackSize, callback, callbackArg));
+    static CThread *create(CThread::Callback callback, void *callbackArg, int32_t iAttr = eAttributeNone, int32_t iPriority = 16, int32_t iStackSize = 0x8000) {
+        return (new CThread(iAttr, iPriority, iStackSize, callback, callbackArg));
     }
 
     //! Get thread ID
@@ -107,7 +123,7 @@ public:
 private:
     static int32_t threadCallback(int32_t argc, const char **argv) {
         //! After call to start() continue with the internal function
-        ((LaunchThread *) argv)->executeThread();
+        ((CThread *) argv)->executeThread();
         return 0;
     }
     int32_t iAttributes;

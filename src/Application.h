@@ -8,7 +8,7 @@
 // forward declaration
 class FreeTypeGX;
 
-class Application : public LaunchThread {
+class Application : public CThread {
 public:
       Application();
 
