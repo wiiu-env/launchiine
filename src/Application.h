@@ -1,31 +1,23 @@
-/****************************************************************************
- * Copyright (C) 2015 Dimok
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- ****************************************************************************/
 #ifndef _APPLICATION_H
 #define _APPLICATION_H
 
 #include "menu/MainWindow.h"
 #include "system/CThread.h"
-#include <gui/video/CVideo.h>
+#include "gui/video/CVideo.h"
 
 // forward declaration
 class FreeTypeGX;
 
 class Application : public CThread {
 public:
+      Application();
+
+    virtual ~Application();
+    
+    static Application *applicationInstance;
+    static bool exitApplication;
+    static bool quitRequest;
+    
     static Application *instance() {
         if (!applicationInstance)
             applicationInstance = new Application();
@@ -58,15 +50,8 @@ public:
     void quit(int code);
 
 private:
-    Application();
-
-    virtual ~Application();
 
     bool procUI(void);
-
-    static Application *applicationInstance;
-    static bool exitApplication;
-    static bool quitRequest;
 
     void executeThread(void);
 

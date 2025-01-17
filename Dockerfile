@@ -1,5 +1,5 @@
-FROM wiiuenv/devkitppc:20211229
+FROM devkitpro/devkitppc:20250102
 
-COPY --from=wiiuenv/libgui:20220109 /artifacts $DEVKITPRO
+COPY --from=wiiuenv/libgui:20220205 /artifacts $DEVKITPRO
 
 WORKDIR project

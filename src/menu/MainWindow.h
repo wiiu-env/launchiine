@@ -21,7 +21,7 @@
 #include "MainDrcButtonsFrame.h"
 #include "game/GameList.h"
 #include "gui/GuiTitleBrowser.h"
-#include <gui/Gui.h>
+#include "gui/Gui.h"
 #include <queue>
 #include <vector>
 
